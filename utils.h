@@ -39,6 +39,7 @@ void write_to_file(const char *fname, const char *data, ulong size, ulong pos=0,
 void read_from_file(const char *fname, char *data, ulong maxsize=TMP_BUFFER_SIZE, int pos=0);
 void remove_file(const char *fname);
 bool file_exists(const char *fname);
+long file_length(const char *fn);
 
 void file_read_block (const char *fname, void *dst, ulong pos, ulong len);
 void file_write_block(const char *fname, const void *src, ulong pos, ulong len);

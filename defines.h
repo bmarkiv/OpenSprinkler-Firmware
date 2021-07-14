@@ -138,7 +138,7 @@ typedef unsigned long ulong;
 /** Default string option values */
 #define DEFAULT_PASSWORD          "a6d82bced638de3def1e9bbb4983225c"  // md5 of 'opendoor'
 #define DEFAULT_LOCATION          "42.36,-71.06"	// Boston,MA
-#define DEFAULT_JAVASCRIPT_URL    "https://ui.opensprinkler.com/js"
+#define DEFAULT_JAVASCRIPT_URL    "js"
 #define DEFAULT_WEATHER_URL       "weather.opensprinkler.com"
 #define DEFAULT_IFTTT_URL         "maker.ifttt.com"
 #define DEFAULT_EMPTY_STRING      ""
@@ -378,7 +378,7 @@ enum {
 	//#define PIN_BUTTON_2      24    // button 2
 	//#define PIN_BUTTON_3      25    // button 3
 
-	#define PIN_FREE_LIST		{5,6,7,8,9,10,11,12,13,16,18,19,20,21,23,24,25,26}  // free GPIO pins
+	#define PIN_FREE_LIST           {2,3,5,6,7,8,9,10,11,12,13,14,16,18,19,20,21,23,24,25,26}  // free GPIO pins
 	#define ETHER_BUFFER_SIZE   16384
 
 #elif defined(OSBO) // for OSBo

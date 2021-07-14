@@ -314,6 +314,32 @@ bool file_exists(const char *fn) {
 
 #endif
 }
+long file_length(const char *fn) {
+#if defined(ESP8266)
+
+	return SPIFFS.exists(fn);
+
+#elif defined(ARDUINO)
+
+	sd.chdir("/");
+	return sd.exists(fn);
+
+#else
+
+	FILE *file;
+	file = fopen(get_filename_fullpath(fn), "rb");
+	if(file) {
+		fseek(file, 0, SEEK_END);
+		long length = ftell(file);
+		fclose(file); 
+		return length;
+	}else {
+		return -1;
+	}
+
+#endif
+}
+
 
 // file functions
 void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {

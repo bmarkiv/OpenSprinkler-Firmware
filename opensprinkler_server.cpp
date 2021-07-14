@@ -1166,7 +1166,7 @@ void server_home()
 	bfill.emit_p(PSTR("var ver=$D,ipas=$D;</script>\n"),
 							 OS_FW_VERSION, os.iopts[IOPT_IGNORE_PASSWORD]);
 
-	bfill.emit_p(PSTR("<script src=\"$O/home.js\"></script>\n</body>\n</html>"), SOPT_JAVASCRIPTURL);
+	bfill.emit_p(PSTR("<script src=\"js/home.js\"></script>\n</body>\n</html>"));
 
 	handle_return(HTML_OK);
 }
@@ -2027,7 +2027,60 @@ void start_server_ap() {
 
 #endif
 
+void send_file(const char *fn) {
+	FILE *fp = fopen(fn, "rb");
+	if(fp) {
+		while(1) {
+			size_t len = fread(ether_buffer, 1, ETHER_BUFFER_SIZE*2, fp);
+			if (len == 0 || len == EOF)
+				break;
+			m_client->write((const uint8_t *)ether_buffer, len);
+		}
+		fclose(fp);
+	} else {
+		DEBUG_PRINTLN("Failed to open following file:");
+		DEBUG_PRINTLN(fn);
+	}
+}
+
+enum file_type {
+	none, js, css, html, gif, ico, png
+};
+
+struct get_file_request
+{
+	file_type type;
+	char name[32];
+	const char *content_type;
+};
+
+void parse_file_request(const char *com, get_file_request* rez){
+	int len = 0;
+	rez->name[len++] = 'w';
+	rez->name[len++] = 'w';
+	rez->name[len++] = 'w';
+	const char *ext = NULL;
+	while(true){
+		if (!com || *com == '\0' || *com == ' ' || len == sizeof(rez->name)-1){
+			rez->name[len] = '\0';
+			break;
+		}
+		if (*com == '.')
+			ext = com + 1;
+		rez->name[len++] = *com++;
+	}
+	if (ext == NULL) {rez->type = file_type::none; rez->content_type = ""; return;}
+	if (memcmp(ext, "png", 3)==0) {rez->type = file_type::png; rez->content_type = "image/png\r\n"; return;}
+	if (memcmp(ext, "ico", 3)==0) {rez->type = file_type::ico; rez->content_type = "image/vnd.microsoft.icon\r\n"; return;}
+	if (memcmp(ext, "gif", 3)==0) {rez->type = file_type::gif; rez->content_type = "image/gif\r\n"; return;}
+	if (memcmp(ext, "css", 3)==0) {rez->type = file_type::css; rez->content_type = "text/css\r\n"; return;}
+	if (memcmp(ext, "htm", 3)==0) {rez->type = file_type::css; rez->content_type = "text/html\r\n"; return;}
+	if (memcmp(ext, "js",  2)==0) {rez->type = file_type::js;  rez->content_type = "application/javascript\r\n"; return;}
+	rez->type = file_type::none; rez->content_type = "";
+}
+
 void handle_web_request(char *p) {
+	DEBUG_PRINTLN(p);
 	rewind_ether_buffer();
 
 	// assume this is a GET request
@@ -2039,6 +2092,34 @@ void handle_web_request(char *p) {
 		server_home();	// home page handler
 		send_packet(true);
 	} else {
+		get_file_request r;
+		parse_file_request(p+4, &r);
+		if (r.type != file_type::none){
+			// first check if compressed version of file is available
+			int name_length = strlen(r.name);
+			strcpy(r.name+name_length, ".gz");
+			long length = file_length(r.name);
+			bool gzip = length > 0;
+			if (!gzip) {
+				r.name[name_length] = 0;
+				length = file_length(r.name);
+			}
+			if (length < 0){
+				print_json_header();
+				bfill.emit_p(PSTR("\"result\":$D}"), HTML_PAGE_NOT_FOUND);
+				send_packet(true);
+				return;
+			}
+			const char * content_encoding = gzip ? "content-encoding: gzip\r\n" : "";
+			bfill.emit_p(PSTR("$FAccept-Ranges: bytes\r\nContent-Type: $F$F$F$FContent-Length: $D\r\n\r\n"), 
+				html200OK, r.content_type, htmlCacheCtrl, htmlAccessControl, content_encoding, length);
+			DEBUG_PRINTLN(ether_buffer);
+			send_packet();
+			send_file(r.name);
+			m_client->stop();
+			return;
+		}
+
 		// server funtion handlers
 		byte i;
 		for(i=0;i<sizeof(urls)/sizeof(URLHandler);i++) {

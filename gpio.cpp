@@ -190,7 +190,9 @@ static byte GPIOExport(int pin) {
 
 	fd = open("/sys/class/gpio/export", O_WRONLY);
 	if (fd < 0) {
+		#if !defined(NO_GPIO)
 		DEBUG_PRINTLN("failed to open export for writing");
+		#endif
 		return 0;
 	}
 
@@ -278,7 +280,9 @@ int gpio_fd_open(int pin, int mode) {
 	snprintf(path, BUFFER_MAX, "/sys/class/gpio/gpio%d/value", pin);
 	fd = open(path, mode);
 	if (fd < 0) {
+#if !defined(NO_GPIO)
 		DEBUG_PRINTLN("failed to open gpio");
+#endif
 		return -1;
 	}
 	return fd;

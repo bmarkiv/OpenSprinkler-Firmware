@@ -1997,7 +1997,7 @@ void OpenSprinkler::nvdata_save() {
 void OpenSprinkler::iopts_load() {
 	file_read_block(IOPTS_FILENAME, iopts, 0, NUM_IOPTS);
 	nboards = iopts[IOPT_EXT_BOARDS]+1;
-	nstations = nboards * 8;
+	nstations = nboards;
 	status.enabled = iopts[IOPT_DEVICE_ENABLE];
 	iopts[IOPT_FW_VERSION] = OS_FW_VERSION;
 	iopts[IOPT_FW_MINOR] = OS_FW_MINOR;
@@ -2018,7 +2018,7 @@ void OpenSprinkler::iopts_load() {
 void OpenSprinkler::iopts_save() {
 	file_write_block(IOPTS_FILENAME, iopts, 0, NUM_IOPTS);
 	nboards = iopts[IOPT_EXT_BOARDS]+1;
-	nstations = nboards * 8;
+	nstations = nboards;
 	status.enabled = iopts[IOPT_DEVICE_ENABLE];
 }
 
