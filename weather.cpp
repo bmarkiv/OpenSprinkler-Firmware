@@ -20,7 +20,7 @@
  * along with this program.  If not, see
  * <http://www.gnu.org/licenses/>. 
  */
-
+#if defined(CHECK_WEATHER)
 #include <stdlib.h>
 #include "OpenSprinkler.h"
 #include "utils.h"
@@ -182,3 +182,4 @@ void GetWeather() {
 		// if wt_errCode > 0, the call is successful but weather script may return error
 	}
 }
+#endif

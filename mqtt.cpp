@@ -26,7 +26,7 @@
 	#if defined(ESP8266)
 		#include <ESP8266WiFi.h>
 	#endif
-	#include <UIPEthernet.h>
+	#include <Ethernet.h> // #include <UIPEthernet.h>
 	#include <PubSubClient.h>
 
 	struct PubSubClient *mqtt_client = NULL;
@@ -95,6 +95,7 @@ bool OSMqtt::_enabled = false;						// Flag indicating whether MQTT is enabled
 
 // Initialise the client libraries and event handlers.
 void OSMqtt::init(void) {
+	/*
 	DEBUG_LOGF("MQTT Init\r\n");
 	char id[MQTT_MAX_ID_LEN + 1] = {0};
 
@@ -105,19 +106,23 @@ void OSMqtt::init(void) {
 #endif
 
 	init(id);
+	*/
 };
 
 // Initialise the client libraries and event handlers.
 void OSMqtt::init(const char * clientId) {
+	/*
 	DEBUG_LOGF("MQTT Init: ClientId %s\r\n", clientId);
 
 	strncpy(_id, clientId, MQTT_MAX_ID_LEN);
 	_id[MQTT_MAX_ID_LEN] = 0;
 	_init();
+	*/
 };
 
 // Start the MQTT service and connect to the MQTT broker using the stored configuration.
 void OSMqtt::begin(void) {
+	/*
 	DEBUG_LOGF("MQTT Begin\r\n");
 	char host[MQTT_MAX_HOST_LEN + 1] = {0};
 	char username[MQTT_MAX_USERNAME_LEN + 1] = {0};
@@ -137,10 +142,12 @@ void OSMqtt::begin(void) {
 	}
 
 	begin(host, port, username, password, (bool)enabled);
+	*/
 }
 
 // Start the MQTT service and connect to the MQTT broker.
 void OSMqtt::begin( const char * host, int port, const char * username, const char * password, bool enabled ) {
+	/*
 	DEBUG_LOGF("MQTT Begin: Config (%s:%d %s) %s\r\n", host, port, username, enabled ? "Enabled" : "Disabled");
 
 	strncpy(_host, host, MQTT_MAX_HOST_LEN);
@@ -161,10 +168,12 @@ void OSMqtt::begin( const char * host, int port, const char * username, const ch
 	if (_enabled) {
 		_connect();
 	}
+	*/
 }
 
 // Publish an MQTT message to a specific topic
 void OSMqtt::publish(const char *topic, const char *payload) {
+	/*
 	DEBUG_LOGF("MQTT Publish: %s %s\r\n", topic, payload);
 
 	if (mqtt_client == NULL || !_enabled || os.status.network_fails > 0) return;
@@ -175,10 +184,12 @@ void OSMqtt::publish(const char *topic, const char *payload) {
 	}
 
 	_publish(topic, payload);
+	*/
 }
 
 // Regularly call the loop function to ensure "keep alive" messages are sent to the broker and to reconnect if needed.
 void OSMqtt::loop(void) {
+	/*
 	static unsigned long last_reconnect_attempt = 0;
 
 	if (mqtt_client == NULL || !_enabled || os.status.network_fails > 0) return;
@@ -206,6 +217,7 @@ void OSMqtt::loop(void) {
 		last_state = state; last_network = network; last_mqtt = mqtt;
 	}
 #endif
+	*/
 }
 
 /**************************** ARDUINO ********************************************/

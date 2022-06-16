@@ -24,11 +24,14 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
-//#define ENABLE_DEBUG  // enable serial debug
+//#undef ESP8266
+//#undef ARDUINO
 
+#define ENABLE_DEBUG  // enable serial debug
+#undef byte
 typedef unsigned char byte;
 typedef unsigned long ulong;
-  
+
 #define TMP_BUFFER_SIZE      255   // scratch buffer size
 
 /** Firmware version, hardware version, and maximal values */
@@ -36,7 +39,7 @@ typedef unsigned long ulong;
                             // if this number is different from the one stored in non-volatile memory
                             // a device reset will be automatically triggered
 
-#define OS_FW_MINOR      7  // Firmware minor version
+#define OS_FW_MINOR      9  // Firmware minor version
 
 /** Hardware version base numbers */
 #define OS_HW_VERSION_BASE   0x00
@@ -106,6 +109,7 @@ typedef unsigned long ulong;
 #define REBOOT_CAUSE_WEATHER_FAIL 8
 #define REBOOT_CAUSE_NETWORK_FAIL 9
 #define REBOOT_CAUSE_NTP          10
+#define REBOOT_CAUSE_PROGRAM	  11
 #define REBOOT_CAUSE_POWERON      99
 
 
@@ -123,7 +127,7 @@ typedef unsigned long ulong;
 
 /** Storage / zone expander defines */
 #if defined(ARDUINO)
-	#define MAX_EXT_BOARDS    8  // maximum number of 8-zone expanders (each 16-zone expander counts as 2)
+	#define MAX_EXT_BOARDS    24  // maximum number of 8-zone expanders (each 16-zone expander counts as 2)
 #else
 	#define MAX_EXT_BOARDS		24 // allow more zones for linux-based firmwares
 #endif
@@ -314,6 +318,8 @@ enum {
 	extern byte PIN_BOOST;
 	extern byte PIN_BOOST_EN;
 	extern byte PIN_LATCH_COM;
+	extern byte PIN_LATCH_COMA;
+	extern byte PIN_LATCH_COMK;
 	extern byte PIN_SENSOR1;
 	extern byte PIN_SENSOR2;
 	extern byte PIN_IOEXP_INT;
@@ -351,15 +357,19 @@ enum {
 
 	/* OS30 revision 2 pin defines */
 	// pins on PCA9555A IO expander have pin numbers IOEXP_PIN+i
-	#define V2_IO_CONFIG         0x1F00 // config bits
-	#define V2_IO_OUTPUT         0x1F00 // output bits
+	#define V2_IO_CONFIG         0x1000 // config bits
+	#define V2_IO_OUTPUT         0x1E00 // output bits
 	#define V2_PIN_BUTTON_1      2 // button 1
 	#define V2_PIN_BUTTON_2      0 // button 2
 	#define V2_PIN_BUTTON_3      IOEXP_PIN+12 // button 3
 	#define V2_PIN_RFTX          15
 	#define V2_PIN_BOOST         IOEXP_PIN+13
 	#define V2_PIN_BOOST_EN      IOEXP_PIN+14
-	#define V2_PIN_LATCH_COM     IOEXP_PIN+15  
+	#define V2_PIN_LATCH_COMA    IOEXP_PIN+8  // latch COM+ (anode)
+	#define V2_PIN_SRLAT         IOEXP_PIN+9  // shift register latch
+	#define V2_PIN_SRCLK         IOEXP_PIN+10 // shift register clock
+	#define V2_PIN_SRDAT         IOEXP_PIN+11 // shift register data
+	#define V2_PIN_LATCH_COMK    IOEXP_PIN+15 // latch COM- (cathode)
 	#define V2_PIN_SENSOR1       3  // sensor 1
 	#define V2_PIN_SENSOR2       10 // sensor 2
 
@@ -418,14 +428,16 @@ enum {
 
 	#if defined(ARDUINO)
 		#define DEBUG_BEGIN(x)   {Serial.begin(x);}
-		#define DEBUG_PRINT(x)   {Serial.print(x);}
+		#define DEBUG_PRINT(f)   {Serial.print(f);}
+		#define DEBUG_PRINTF(f, ...) do { Serial.printf(f, __VA_ARGS__); } while (0)
 		#define DEBUG_PRINTLN(x) {Serial.println(x);}
 	#else
 		#include <stdio.h>
-		#define DEBUG_BEGIN(x)          {}  /** Serial debug functions */
-		inline  void DEBUG_PRINT(int x) {printf("%d", x);}
-		inline  void DEBUG_PRINT(const char*s) {printf("%s", s);}
-		#define DEBUG_PRINTLN(x)        {DEBUG_PRINT(x);printf("\n");}
+		#define DEBUG_BEGIN(x)          		{}  /** Serial debug functions */
+		inline  void DEBUG_PRINT(int x) 		{printf("%d", x);}
+		inline  void DEBUG_PRINT(const char*s) 	{printf("%s", s);}
+		#define DEBUG_PRINTF(f, ...) do {        printf(f, __VA_ARGS__); } while (0)
+		#define DEBUG_PRINTLN(x)        		{DEBUG_PRINT(x);printf("\n");}
 	#endif
   
 #else

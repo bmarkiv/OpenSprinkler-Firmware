@@ -32,7 +32,6 @@
 #if defined(ARDUINO)
 	EthernetServer *m_server = NULL;
 	EthernetClient *m_client = NULL;
-	UDP	*udp = NULL;
 	#if defined(ESP8266)
 		ESP8266WebServer *wifi_server = NULL;
 		static uint16_t led_blink_ms = LED_FAST_BLINK;
@@ -53,8 +52,7 @@ void remote_http_callback(char*);
 
 // Small variations have been added to the timing values below
 // to minimize conflicting events
-#define NTP_SYNC_INTERVAL				86413L 	// NYP sync interval (in seconds)
-#define RTC_SYNC_INTERVAL				3607		// RTC sync interval (in seconds)
+#define NTP_SYNC_INTERVAL				86413L 	// NTP sync interval (in seconds)
 #define CHECK_NETWORK_INTERVAL	601			// Network checking timeout (in seconds)
 #define CHECK_WEATHER_TIMEOUT		21613L  // Weather check interval (in seconds)
 #define CHECK_WEATHER_SUCCESS_TIMEOUT 86400L // Weather check success interval (in seconds)
@@ -68,7 +66,7 @@ char ether_buffer[ETHER_BUFFER_SIZE*2]; // ethernet buffer, make it twice as lar
 char tmp_buffer[TMP_BUFFER_SIZE*2]; // scratch buffer, make it twice as large to allow overflow
 
 // ====== Object defines ======
-OpenSprinkler os; // OpenSprinkler object
+OpenSprinkler os; 	// OpenSprinkler object
 ProgramData pd;		// ProgramdData object
 
 /* ====== Robert Hillman (RAH)'s implementation of flow sensor ======
@@ -81,6 +79,8 @@ ulong flow_begin, flow_start, flow_stop, flow_gallons;
 ulong flow_count = 0;
 byte prev_flow_state = HIGH;
 float flow_last_gpm=0;
+
+uint32_t reboot_timer = 0;
 
 void flow_poll() {
 	#if defined(ESP8266)
@@ -125,7 +125,7 @@ bool ui_confirm(PGM_P str) {
 		button = os.button_read(BUTTON_WAIT_NONE);
 		if((button&BUTTON_MASK)==BUTTON_3 && (button&BUTTON_FLAG_DOWN)) return true;
 		if((button&BUTTON_MASK)==BUTTON_1 && (button&BUTTON_FLAG_DOWN)) return false;
-		os.delay_nicely(10);
+		delay(10);
 	} while(millis() - start < 2500);
 	return false;
 }
@@ -251,7 +251,7 @@ void ui_state_machine() {
 					ui_state = UI_STATE_RUNPROG;
 				}
 			} else {	// clicking B3: switch board display (cycle through master and all extension boards)
-				os.status.display_board = (os.status.display_board + 1) % (os.nboards);
+				os.status.display_board = (os.status.display_board + 1) % (os.nstations);
 			}
 			break;
 		}
@@ -307,9 +307,8 @@ void do_setup() {
 
 	pd.init();						// ProgramData init
 
-	setSyncInterval(RTC_SYNC_INTERVAL);  // RTC sync interval
-	// if rtc exists, sets it as time sync source
-	setSyncProvider(RTC.get);
+	// set time using RTC if it exists
+	if(RTC.exists())	setTime(RTC.get());
 	os.lcd_print_time(os.now_tz());  // display time to LCD
 	os.powerup_lasttime = os.now_tz();
 	
@@ -387,13 +386,13 @@ void turn_off_station(byte sid, ulong curr_time);
 void process_dynamic_events(ulong curr_time);
 void check_network();
 void check_weather();
+bool process_special_program_command(const char*, uint32_t curr_time);
 void perform_ntp_sync();
 void delete_log(char *name);
 
 #if defined(ESP8266)
 void start_server_ap();
 void start_server_client();
-unsigned long reboot_timer = 0;
 #endif
 
 void handle_web_request(char *p);
@@ -420,7 +419,7 @@ void do_loop()
 	os.status.mas = os.iopts[IOPT_MASTER_STATION];
 	os.status.mas2= os.iopts[IOPT_MASTER_STATION_2];
 	time_t curr_time = os.now_tz();
-	
+		
 	// ====== Process Ethernet packets ======
 #if defined(ARDUINO)	// Process Ethernet packets for Arduino
 	#if defined(ESP8266)
@@ -428,7 +427,7 @@ void do_loop()
 	if (m_server) {	// if wired Ethernet
 		led_blink_ms = 0;
 
-		#if defined(ENABLE_DEBUG)
+		#if defined(ENABLE_DEBUG_NO)
 			// this section prints out ENC28J60 register values onto LCD
 			#define PHY_TIMEOUT 10
 			static ulong phy_timeout = 0;
@@ -443,9 +442,9 @@ void do_loop()
 				#define ENC28J60_ESTAT_LATCOL		0x10
 				#define ENC28J60_ESTAT_TXABRT		0x02
 				#define ENC28J60_ECON1_RXEN			0x04
-				uint16_t estat = Enc28J60.readReg((uint8_t) ENC28J60_ESTAT);
-				uint16_t eir = Enc28J60.readReg((uint8_t) ENC28J60_EIR);
-				uint16_t econ1 = Enc28J60.readReg((uint8_t) ENC28J60_ECON1);
+				uint16_t estat = Enc28J60Network::readReg((uint8_t) ENC28J60_ESTAT);
+				uint16_t eir = Enc28J60Network::readReg((uint8_t) ENC28J60_EIR);
+				uint16_t econ1 = Enc28J60Network::readReg((uint8_t) ENC28J60_ECON1);
 
 				os.lcd.setCursor(0,-1);
 				os.lcd.print(eir, HEX);
@@ -496,7 +495,7 @@ void do_loop()
 			client.stop();
 		}
 
-	} else {	
+	} else {
 		switch(os.state) {
 		case OS_STATE_INITIAL:
 			if(os.get_wifi_mode()==WIFI_MODE_AP) {
@@ -624,7 +623,7 @@ void do_loop()
 		}
 	}
 #endif	// Process Ethernet packets
-
+	/*
 	// Start up MQTT when we have a network connection
 	if (os.status.req_mqtt_restart && os.network_connected()) {
 		DEBUG_PRINTLN(F("req_mqtt_restart"));
@@ -632,6 +631,7 @@ void do_loop()
 		os.status.req_mqtt_restart = false;
 	}
 	os.mqtt.loop();
+	*/
 
 	// The main control loop runs once every second
 	if (curr_time != last_time) {
@@ -645,13 +645,7 @@ void do_loop()
 		
 		last_time = curr_time;
 		if (os.button_timeout) os.button_timeout--;
-		
-		#if defined(ESP8266)
-		if(reboot_timer && millis() > reboot_timer) {
-			os.reboot_dev(REBOOT_CAUSE_TIMER);
-		}
-		#endif
-			
+
 #if defined(ARDUINO)
 		if (!ui_state)
 			os.lcd_print_time(os.now_tz());				// print time
@@ -736,6 +730,9 @@ void do_loop()
 				pd.read(pid, &prog);	// todo future: reduce load time
 				if(prog.check_match(curr_time)) {
 					// program match found
+					// check and process special program command
+					if(process_special_program_command(prog.name, curr_time))	continue;
+					
 					// process all selected stations
 					for(sid=0;sid<os.nstations;sid++) {
 						bid=sid>>3;
@@ -745,7 +742,7 @@ void do_loop()
 							continue;
 
 						// if station has non-zero water time and the station is not disabled
-						if (prog.durations[sid] && !(os.attrib_dis[bid]&(1<<s))) {
+						if (prog.durations[sid] && !(os.stationAttributes.a.attrib_dis[sid])) {
 							// water time is scaled by watering percentage
 							ulong water_time = water_time_resolve(prog.durations[sid]);
 							// if the program is set to use weather scaling
@@ -815,31 +812,28 @@ void do_loop()
 				pd.station_qid[sid]=qid;
 			}
 			// next, go through the stations and perform time keeping
-			for(bid=0;bid<os.nboards; bid++) {
-				bitvalue = os.station_bits[bid];
-				for(s=0;s<8;s++) {
-					byte sid = bid*8+s;
+			for(sid=0;bid<os.nstations; sid++) {
+				bitvalue = os.station_bits[sid];
 
-					// skip master station
-					if (os.status.mas == sid+1) continue;
-					if (os.status.mas2== sid+1) continue;
-					if (pd.station_qid[sid]==255) continue;
+				// skip master station
+				if (os.status.mas == sid+1) continue;
+				if (os.status.mas2== sid+1) continue;
+				if (pd.station_qid[sid]==255) continue;
 
-					q = pd.queue + pd.station_qid[sid];
-					// check if this station is scheduled, either running or waiting to run
-					if (q->st > 0) {
-						// if so, check if we should turn it off
-						if (curr_time >= q->st+q->dur) {
-							turn_off_station(sid, curr_time);
-						}
+				q = pd.queue + pd.station_qid[sid];
+				// check if this station is scheduled, either running or waiting to run
+				if (q->st > 0) {
+					// if so, check if we should turn it off
+					if (curr_time >= q->st+q->dur) {
+						turn_off_station(sid, curr_time);
 					}
-					// if current station is not running, check if we should turn it on
-					if(!((bitvalue>>s)&1)) {
-						if (curr_time >= q->st && curr_time < q->st+q->dur) {
-							turn_on_station(sid);
-						} //if curr_time > scheduled_start_time
-					} // if current station is not running
-				}//end_s
+				}
+				// if current station is not running, check if we should turn it on
+				if(!(bitvalue & 1)) {
+					if (curr_time >= q->st && curr_time < q->st+q->dur) {
+						turn_on_station(sid);
+					} //if curr_time > scheduled_start_time
+				} // if current station is not running
 			}//end_bid
 
 			// finally, go through the queue again and clear up elements marked for removal
@@ -864,14 +858,13 @@ void do_loop()
 			q = pd.queue;
 			for(;q<pd.queue+pd.nqueue;q++) {
 				sid = q->sid;
-				bid = sid>>3;
-				s = sid&0x07;
+
 				// check if any sequential station has a valid stop time
 				// and the stop time must be larger than curr_time
 				sst = q->st + q->dur;
 				if (sst>curr_time) {
 					// only need to update last_seq_stop_time for sequential stations
-					if (os.attrib_seq[bid]&(1<<s) && !re) {
+					if (os.stationAttributes.a.attrib_seq[sid] && !re) {
 						pd.last_seq_stop_time = (sst>pd.last_seq_stop_time ) ? sst : pd.last_seq_stop_time;
 					}
 				}
@@ -908,10 +901,8 @@ void do_loop()
 			for(sid=0;sid<os.nstations;sid++) {
 				// skip if this is the master station
 				if (os.status.mas == sid+1) continue;
-				bid = sid>>3;
-				s = sid&0x07;
 				// if this station is running and is set to activate master
-				if ((os.station_bits[bid]&(1<<s)) && (os.attrib_mas[bid]&(1<<s))) {
+				if ((os.station_bits[sid]) && (os.stationAttributes.a.attrib_mas[sid])) {
 					q=pd.queue+pd.station_qid[sid];
 					// check if timing is within the acceptable range
 					if (curr_time >= q->st + mas_on_adj &&
@@ -931,10 +922,8 @@ void do_loop()
 			for(sid=0;sid<os.nstations;sid++) {
 				// skip if this is the master station
 				if (os.status.mas2 == sid+1) continue;
-				bid = sid>>3;
-				s = sid&0x07;
 				// if this station is running and is set to activate master
-				if ((os.station_bits[bid]&(1<<s)) && (os.attrib_mas2[bid]&(1<<s))) {
+				if (os.station_bits[sid] && (os.stationAttributes.a.attrib_mas2[sid])) {
 					q=pd.queue+pd.station_qid[sid];
 					// check if timing is within the acceptable range
 					if (curr_time >= q->st + mas_on_adj_2 &&
@@ -971,8 +960,11 @@ void do_loop()
 			#endif
 		}
 		
+#endif		
+		
+		// handle reboot request
 		// check safe_reboot condition
-		if (os.status.safe_reboot) {
+		if (os.status.safe_reboot && (curr_time > reboot_timer)) {
 			// if no program is running at the moment
 			if (!os.status.program_busy) {
 				// and if no program is scheduled to run in the next minute
@@ -988,8 +980,9 @@ void do_loop()
 					os.reboot_dev(os.nvdata.reboot_cause);
 				}
 			}
+		} else if(reboot_timer && (curr_time > reboot_timer)) {
+			os.reboot_dev(REBOOT_CAUSE_TIMER);		
 		}
-#endif
 
 		// real-time flow count
 		static ulong flowcount_rt_start = 0;
@@ -1010,7 +1003,7 @@ void do_loop()
 		// check network connection
 		if (curr_time && (curr_time % CHECK_NETWORK_INTERVAL==0))  os.status.req_network = 1;
 		check_network();
-
+#if defined(CHECK_WEATHER)
 		// check weather
 		check_weather();
 
@@ -1024,6 +1017,7 @@ void do_loop()
 			}
 			os.weather_update_flag = 0;
 		}
+#endif
 		static byte reboot_notification = 1;
 		if(reboot_notification) {
 			reboot_notification = 0;
@@ -1036,6 +1030,24 @@ void do_loop()
 	#endif
 }
 
+/** Check and process special program command */
+bool process_special_program_command(const char* pname, uint32_t curr_time) {
+	if(pname[0]==':') {	// special command start with :
+		if(strncmp(pname, ":>reboot_now", 12) == 0) {
+			os.status.safe_reboot = 0; // reboot regardless of program status
+			reboot_timer = curr_time + 65; // set a timer to reboot in 65 seconds
+			// this is to avoid the same command being executed again right after reboot
+			return true;
+		} else if(strncmp(pname, ":>reboot", 8) == 0) {
+			os.status.safe_reboot = 1; // by default reboot should only happen when controller is idle
+			reboot_timer = curr_time + 65; // set a timer to reboot in 65 seconds
+			// this is to avoid the same command being executed again right after reboot
+			return true;
+		}
+	}
+	return false;
+}
+#if defined(CHECK_WEATHER)
 /** Make weather query */
 void check_weather() {
 	// do not check weather if
@@ -1073,6 +1085,9 @@ void check_weather() {
 		GetWeather();
 	}
 }
+#else
+void check_weather() {}
+#endif
 
 /** Turn on a station
  * This function turns on a scheduled station
@@ -1147,32 +1162,28 @@ void process_dynamic_events(ulong curr_time) {
 		sn2 = true;
 
 	// todo: handle sensor 2
-	byte sid, s, bid, qid, igs, igs2, igrd;
-	for(bid=0;bid<os.nboards;bid++) {
-		igs = os.attrib_igs[bid];
-		igs2= os.attrib_igs2[bid];
-		igrd= os.attrib_igrd[bid];
-		
-		for(s=0;s<8;s++) {
-			sid=bid*8+s;
+	byte sid, qid, igs, igs2, igrd;
+	for(sid=0;sid<os.nstations;sid++) {
+		igs = os.stationAttributes.a.attrib_igs[sid];
+		igs2= os.stationAttributes.a.attrib_igs2[sid];
+		igrd= os.stationAttributes.a.attrib_igrd[sid];
 
-			// ignore master stations because they are handled separately			 
-			if (os.status.mas == sid+1) continue;
-			if (os.status.mas2== sid+1) continue;			 
-			// If this is a normal program (not a run-once or test program)
-			// and either the controller is disabled, or
-			// if raining and ignore rain bit is cleared
-			// FIX ME
-			qid = pd.station_qid[sid];
-			if(qid==255) continue;
-			RuntimeQueueStruct *q = pd.queue + qid;
+		// ignore master stations because they are handled separately			 
+		if (os.status.mas == sid+1) continue;
+		if (os.status.mas2== sid+1) continue;			 
+		// If this is a normal program (not a run-once or test program)
+		// and either the controller is disabled, or
+		// if raining and ignore rain bit is cleared
+		// FIX ME
+		qid = pd.station_qid[sid];
+		if(qid==255) continue;
+		RuntimeQueueStruct *q = pd.queue + qid;
 
-			if(q->pid>=99) continue;	// if this is a manually started program, proceed
-			if(!en)	turn_off_station(sid, curr_time);	// if system is disabled, turn off zone
-			if(rd && !(igrd&(1<<s))) turn_off_station(sid, curr_time);	// if rain delay is on and zone does not ignore rain delay, turn it off
-			if(sn1&& !(igs &(1<<s))) turn_off_station(sid, curr_time);	// if sensor1 is on and zone does not ignore sensor1, turn it off
-			if(sn2&& !(igs2&(1<<s))) turn_off_station(sid, curr_time);	// if sensor2 is on and zone does not ignore sensor2, turn it off
-		}
+		if(q->pid>=99) continue;	// if this is a manually started program, proceed
+		if(!en)	turn_off_station(sid, curr_time);	// if system is disabled, turn off zone
+		if(rd && !igrd) turn_off_station(sid, curr_time);	// if rain delay is on and zone does not ignore rain delay, turn it off
+		if(sn1&& !igs ) turn_off_station(sid, curr_time);	// if sensor1 is on and zone does not ignore sensor1, turn it off
+		if(sn2&& !igs2) turn_off_station(sid, curr_time);	// if sensor2 is on and zone does not ignore sensor2, turn it off
 	}
 }
 
@@ -1203,7 +1214,7 @@ void schedule_all_stations(ulong curr_time) {
 
 		// if this is a sequential station and the controller is not in remote extension mode
 		// use sequential scheduling. station delay time apples
-		if (os.attrib_seq[bid]&(1<<s) && !re) {
+		if (os.stationAttributes.a.attrib_seq[bid]&(1<<s) && !re) {
 			// sequential scheduling
 			q->st = seq_start_time;
 			seq_start_time += q->dur;
@@ -1285,7 +1296,7 @@ void manual_start_program(byte pid, byte uwt) {
 		if(uwt) {
 			dur = dur * os.iopts[IOPT_WATER_PERCENTAGE] / 100;
 		}
-		if(dur>0 && !(os.attrib_dis[bid]&(1<<s))) {
+		if(dur>0 && !(os.stationAttributes.a.attrib_dis[bid]&(1<<s))) {
 			RuntimeQueueStruct *q = pd.enqueue();
 			if (q) {
 				q->st = 0;
@@ -1314,7 +1325,7 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 	char* postval = tmp_buffer;
 	uint32_t volume;
 
-	bool ifttt_enabled = os.iopts[IOPT_IFTTT_ENABLE]&type;
+	bool ifttt_enabled = false; //os.iopts[IOPT_IFTTT_ENABLE]&type;
 
 	// check if this type of event is enabled for push notification
 	if (!ifttt_enabled && !os.mqtt.enabled())
@@ -1350,9 +1361,7 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 				}
 			}
 			if (ifttt_enabled) {
-				char name[STATION_NAME_SIZE];
-				os.get_station_name(lval, name);
-				sprintf_P(postval+strlen(postval), PSTR("Station %s closed. It ran for %d minutes %d seconds."), name, (int)fval/60, (int)fval%60);
+				sprintf_P(postval+strlen(postval), PSTR("Station %s closed. It ran for %d minutes %d seconds."), os.get_station_name(lval), (int)fval/60, (int)fval%60);
 
 				if(os.iopts[IOPT_SENSOR1_TYPE]==SENSOR_TYPE_FLOW) {
 					sprintf_P(postval+strlen(postval), PSTR(" Flow rate: %d.%02d"), (int)flow_last_gpm, (int)(flow_last_gpm*100)%100);
@@ -1418,10 +1427,10 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 			volume = lval*volume;
 			if (os.mqtt.enabled()) {
 				strcpy_P(topic, PSTR("opensprinkler/sensor/flow"));
-				sprintf_P(payload, PSTR("{\"count\":%lu,\"volume\":%d.%02d}"), (unsigned long)lval, (int)volume/100, (int)volume%100);
+				sprintf_P(payload, PSTR("{\"count\":%lu,\"volume\":%d.%02d}"), lval, (int)volume/100, (int)volume%100);
 			}
 			if (ifttt_enabled) {
-				sprintf_P(postval+strlen(postval), PSTR("Flow count: %lu, volume: %d.%02d"), (unsigned long)lval, (int)volume/100, (int)volume%100);
+				sprintf_P(postval+strlen(postval), PSTR("Flow count: %lu, volume: %d.%02d"), lval, (int)volume/100, (int)volume%100);
 			}
 			break;
 

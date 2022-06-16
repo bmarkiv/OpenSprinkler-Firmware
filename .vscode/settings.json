@@ -1,2 +1,32 @@
 {
+    "files.associations": {
+        "type_traits": "cpp",
+        "*.tcc": "cpp",
+        "functional": "cpp",
+        "string": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "system_error": "cpp",
+        "typeinfo": "cpp",
+        "climits": "cpp",
+        "array": "cpp",
+        "atomic": "cpp",
+        "concepts": "cpp",
+        "cstddef": "cpp",
+        "cstdio": "cpp",
+        "cstring": "cpp",
+        "cwchar": "cpp",
+        "vector": "cpp",
+        "memory": "cpp",
+        "memory_resource": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp",
+        "tuple": "cpp",
+        "random": "cpp",
+        "initializer_list": "cpp",
+        "new": "cpp",
+        "ranges": "cpp",
+        "stdexcept": "cpp",
+        "utility": "cpp"
+    }
 }
