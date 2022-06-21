@@ -431,21 +431,25 @@ enum {
 		#define DEBUG_PRINT(f)   {Serial.print(f);}
 		#define DEBUG_PRINTF(f, ...) do { Serial.printf(f, __VA_ARGS__); } while (0)
 		#define DEBUG_PRINTLN(x) {Serial.println(x);}
+		#define DEBUG_TIMESTAMP(msg, ...)	{time_t t = os.now_tz(); Serial.printf("%02d-%02d-%02d %02d:%02d:%02d - ", year(t), month(t), day(t), hour(t), minute(t), second(t));}
 	#else
 		#include <stdio.h>
 		#define DEBUG_BEGIN(x)          		{}  /** Serial debug functions */
 		inline  void DEBUG_PRINT(int x) 		{printf("%d", x);}
 		inline  void DEBUG_PRINT(const char*s) 	{printf("%s", s);}
-		#define DEBUG_PRINTF(f, ...) do {        printf(f, __VA_ARGS__); } while (0)
+		#define DEBUG_PRINTF(f, ...)            do {printf(f, __VA_ARGS__); } while (0)
 		#define DEBUG_PRINTLN(x)        		{DEBUG_PRINT(x);printf("\n");}
+		#define DEBUG_TIMESTAMP()			    {char tstr[21]; time_t t = time(NULL); struct tm *tm = localtime(&t); strftime(tstr, 21, "%y-%m-%d %H:%M:%S - ", tm);printf("%s", tstr);}
 	#endif
+	#define DEBUG_LOGF(msg, ...)			    {DEBUG_TIMESTAMP(); DEBUG_PRINTF(msg, __VA_ARGS__);}
   
 #else
 
 	#define DEBUG_BEGIN(x)   {}
 	#define DEBUG_PRINT(x)   {}
 	#define DEBUG_PRINTLN(x) {}
-
+	#define DEBUG_LOGF(x)    {}
+	#define DEBUG_TIMESTAMP() {}
 #endif
   
 /** Re-define avr-specific (e.g. PGM) types to use standard types */

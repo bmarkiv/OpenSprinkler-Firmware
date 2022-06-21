@@ -5638,16 +5638,16 @@ var showHome = ( function() {
 						card.find( ".station-settings" ).removeClass( "ui-icon-master" ).addClass( "ui-icon-gear" );
 					}
 					card.find( ".station-settings" ).data( {
-						um: hasMaster ? ( ( controller.stations.masop[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						um2: hasMaster2 ? ( ( controller.stations.masop2[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						ir: hasIR ? ( ( controller.stations.ignore_rain[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						sn1: hasSN1 ? ( ( controller.stations.ignore_sn1[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						sn2: hasSN2 ? ( ( controller.stations.ignore_sn2[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						ar: hasAR ? ( ( controller.stations.act_relay[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						sd: hasSD ? ( ( controller.stations.stn_dis[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
-						us: hasSequential ? ( ( controller.stations.stn_seq[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined,
+						um: hasMaster ? ( ( controller.stations.masop[i]) ? 1 : 0 ) : undefined,
+						um2: hasMaster2 ? ( ( controller.stations.masop2[i]) ? 1 : 0 ) : undefined,
+						ir: hasIR ? ( ( controller.stations.ignore_rain[i]) ? 1 : 0 ) : undefined,
+						sn1: hasSN1 ? ( ( controller.stations.ignore_sn1[i]) ? 1 : 0 ) : undefined,
+						sn2: hasSN2 ? ( ( controller.stations.ignore_sn2[i]) ? 1 : 0 ) : undefined,
+						ar: hasAR ? ( ( controller.stations.act_relay[i]) ? 1 : 0 ) : undefined,
+						sd: hasSD ? ( ( controller.stations.stn_dis[i]) ? 1 : 0 ) : undefined,
+						us: hasSequential ? ( ( controller.stations.stn_seq[i]) ? 1 : 0 ) : undefined,
 						grp: hasGroup ? controller.stations.stn_grp[ i ] : undefined,
-						hs: hasSpecial ? ( ( controller.stations.stn_spe[ parseInt( i / 8 ) ]  ) ? 1 : 0 ) : undefined
+						hs: hasSpecial ? ( ( controller.stations.stn_spe[i]) ? 1 : 0 ) : undefined
 					} );
 
 					if ( !isStationMaster( i ) && ( isScheduled || isRunning ) ) {

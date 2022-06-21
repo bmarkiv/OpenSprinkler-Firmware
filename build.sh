@@ -24,7 +24,6 @@ elif [ "$1" == "app" ]; then
 	echo "Building app.js..."
 	cat js/jquery.js  > data/js/app.js
 	cat js/libs.js   >> data/js/app.js
-	cat js/jqm.js    >> data/js/app.js
 	cat js/hasher.js >> data/js/app.js
 	cat js/map.js    >> data/js/app.js
 	cat js/main.js   >> data/js/app.js

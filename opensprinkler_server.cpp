@@ -2036,16 +2036,12 @@ void start_server_client() {
 }
 
 void start_server_ap() {
-	DEBUG_PRINTLN("start_server_ap 1");
+	DEBUG_TIMESTAMP(); DEBUG_PRINTLN("start_server_ap");
 	if(!wifi_server) return;
-	DEBUG_PRINTLN("start_server_ap 2");
 	
 	scanned_ssids = scan_network();
-	DEBUG_PRINTLN("start_server_ap 3");
 	String ap_ssid = get_ap_ssid();
-	DEBUG_PRINTLN("start_server_ap 4");
 	start_network_ap(ap_ssid.c_str(), NULL);
-	DEBUG_PRINTLN("start_server_ap 5");
 	delay(500);
 	wifi_server->on("/", on_ap_home);
 	wifi_server->on("/jsap", on_ap_scan);
@@ -2054,7 +2050,6 @@ void start_server_ap() {
 	wifi_server->on("/update", HTTP_GET, on_ap_update);
 	wifi_server->on("/update", HTTP_POST, on_ap_upload_fin, on_ap_upload);
 	wifi_server->onNotFound(on_ap_home);
-	DEBUG_PRINTLN("start_server_ap 6");
 
 	// set up all other handlers
 	char uri[4];
@@ -2067,13 +2062,12 @@ void start_server_ap() {
 	}
 	
 	wifi_server->begin();
-	DEBUG_PRINTLN("start_server_ap 7");
 	os.lcd.setCursor(0, -1);
 	os.lcd.print(F("OSAP:"));
 	os.lcd.print(ap_ssid);
 	os.lcd.setCursor(0, 2);
 	os.lcd.print(WiFi.softAPIP());
-	DEBUG_PRINT("start_server_ap softAPIP: "); DEBUG_PRINTLN(WiFi.softAPIP());
+	DEBUG_TIMESTAMP(); DEBUG_PRINT("start_server_ap softAPIP: "); DEBUG_PRINTLN(WiFi.softAPIP());
 }
 
 #endif
@@ -2081,7 +2075,6 @@ void start_server_ap() {
 void server_home_(const char *uri);
 
 void handle_web_request(char *p) {
-	DEBUG_PRINTLN(F("handle_web_request: ")); //DEBUG_PRINTLN(p);
 	rewind_ether_buffer();
 
 	// assume this is a GET request
@@ -2090,6 +2083,7 @@ void handle_web_request(char *p) {
 	char *dat = com+3;
 
 	if(com[0]==' ') {
+		DEBUG_LOGF("handle_web_request: %s\n", "/");
 		server_home_("/");	// home page handler
 		send_packet(true);
 	} else {
@@ -2102,7 +2096,7 @@ void handle_web_request(char *p) {
 		for(i=0;i<sizeof(urls)/sizeof(URLHandler);i++) {
 			if(pgm_read_byte(_url_keys+2*i)==com[0]
 			 &&pgm_read_byte(_url_keys+2*i+1)==com[1]) {
-
+				DEBUG_LOGF("handle_web_request: %c%c\n", com[0], com[1]);
 				// check password
 				int ret = HTML_UNAUTHORIZED;
 
