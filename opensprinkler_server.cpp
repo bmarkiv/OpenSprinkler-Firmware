@@ -449,9 +449,9 @@ boolean check_password(char *p)
 void server_json_stations_attrib(const char* name, byte *attrib)
 {
 	bfill.emit_p(PSTR("\"$F\":["), name);
-	for(byte i=0;i<os.nstations;i++) {
+	for(byte i=0;i<os.nstations/8;i++) {
 		bfill.emit_p(PSTR("$D"), attrib[i]);
-		if(i!=os.nstations-1)
+		if(i!=os.nstations/8-1)
 			bfill.emit_p(PSTR(","));
 	}
 	bfill.emit_p(PSTR("],"));
@@ -524,7 +524,7 @@ void server_change_stations_attrib(char *p, char header, byte *attrib)
 	char tbuf2[5] = {0, 0, 0, 0, 0};
 	byte sid;
 	tbuf2[0]=header;
-	for(sid=0;sid<os.nstations;sid++) {
+	for(sid=0;sid<os.nstations/8;sid++) {
 		itoa(sid, tbuf2+1, 10);
 		if(findKeyVal(p, tmp_buffer, TMP_BUFFER_SIZE, tbuf2)) {
 			attrib[sid] = atoi(tmp_buffer);
@@ -995,7 +995,7 @@ void server_json_options_main() {
 			bfill.emit_p(PSTR(","));
 	}
 
-	bfill.emit_p(PSTR(",\"dexp\":$D,\"mexp\":$D,\"hwt\":$D}"), os.detect_exp(), MAX_EXT_BOARDS, os.hw_type);
+	bfill.emit_p(PSTR(",\"dexp\":$D,\"mexp\":$D,\"hwt\":$D}"), os.detect_exp(), 0, os.hw_type);
 }
 
 /** Output Options */

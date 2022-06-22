@@ -35,7 +35,7 @@ byte OpenSprinkler::hw_type;
 byte OpenSprinkler::hw_rev;
 
 byte OpenSprinkler::nstations;
-byte OpenSprinkler::station_bits[MAX_NUM_BOARDS];
+byte OpenSprinkler::station_bits[MAX_NUM_STATIONS/8];
 byte OpenSprinkler::engage_booster;
 uint16_t OpenSprinkler::baseline_current;
 
@@ -63,14 +63,14 @@ extern char ether_buffer[];
 #if defined(ESP8266)
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
 	byte OpenSprinkler::state = OS_STATE_INITIAL;
-	byte OpenSprinkler::prev_station_bits[MAX_NUM_BOARDS];
+	byte OpenSprinkler::prev_station_bits[MAX_NUM_STATIONS/8];
 	IOEXP* OpenSprinkler::expanders[MAX_NUM_BOARDS/2];
 	IOEXP* OpenSprinkler::mainio; // main controller IO expander object
 	IOEXP* OpenSprinkler::drio; // driver board IO expander object
 	RCSwitch OpenSprinkler::rfswitch;
 
-	String OpenSprinkler::wifi_ssid="BMHomeWL";
-	String OpenSprinkler::wifi_pass="BM_Home,1";
+	String OpenSprinkler::wifi_ssid="";
+	String OpenSprinkler::wifi_pass="";
 	byte OpenSprinkler::wifi_testmode = 0;
 #elif defined(ARDUINO)
 	LiquidCrystal OpenSprinkler::lcd;
@@ -513,9 +513,9 @@ byte OpenSprinkler::start_ether() {
 	
 	if (iopts[IOPT_USE_DHCP]) {
 		if(!Ethernet.begin((uint8_t*)tmp_buffer))	return 0;
-		memcpy(iopts+IOPT_STATIC_IP1, &(Ethernet.localIP()[0]), 4);
-		memcpy(iopts+IOPT_GATEWAY_IP1, &(Ethernet.gatewayIP()[0]),4);
-		memcpy(iopts+IOPT_DNS_IP1, &(Ethernet.dnsServerIP()[0]), 4);
+		memcpy(iopts+IOPT_STATIC_IP1,   &(Ethernet.localIP()[0]), 4);
+		memcpy(iopts+IOPT_GATEWAY_IP1,  &(Ethernet.gatewayIP()[0]),4);
+		memcpy(iopts+IOPT_DNS_IP1,      &(Ethernet.dnsServerIP()[0]), 4);
 		memcpy(iopts+IOPT_SUBNET_MASK1, &(Ethernet.subnetMask()[0]), 4);
 		iopts_save();			
 	} else {
@@ -762,7 +762,7 @@ void OpenSprinkler::begin() {
 	}
 	
 	/* detect expanders */
-	for(byte i=0;i<(MAX_NUM_BOARDS)/2;i++)
+	for(byte i=0;i<(MAX_NUM_STATIONS/8)/2;i++)
 		expanders[i] = NULL;
 	detect_expanders();
 
@@ -1088,7 +1088,7 @@ void OpenSprinkler::latch_apply_all_station_bits() {
 			}
 		}
 		engage_booster = 0;
-		memcpy(prev_station_bits, station_bits, MAX_NUM_BOARDS);
+		memcpy(prev_station_bits, station_bits, MAX_NUM_STATIONS/8);
 	}
 }
 #endif
@@ -1107,11 +1107,11 @@ void OpenSprinkler::apply_all_station_bits() {
 		// Handle DC booster
 		if(hw_type==HW_TYPE_DC && engage_booster) {
 			// for DC controller: boost voltage and enable output path
-			digitalWriteExt(PIN_BOOST_EN, LOW);  // disfable output path
-			digitalWriteExt(PIN_BOOST, HIGH);		 // enable boost converter
+			digitalWriteExt(PIN_BOOST_EN, LOW);  	// disfable output path
+			digitalWriteExt(PIN_BOOST, HIGH);		// enable boost converter
 			delay((int)iopts[IOPT_BOOST_TIME]<<2);	// wait for booster to charge
-			digitalWriteExt(PIN_BOOST, LOW);		 // disable boost converter
-			digitalWriteExt(PIN_BOOST_EN, HIGH); // enable output path
+			digitalWriteExt(PIN_BOOST, LOW);		// disable boost converter
+			digitalWriteExt(PIN_BOOST_EN, HIGH); 	// enable output path
 			engage_booster = 0;
 		}
 
@@ -1127,6 +1127,7 @@ void OpenSprinkler::apply_all_station_bits() {
 		}
 			
 		// Handle expansion boards
+		# if 0
 		for(int i=0;i<MAX_EXT_BOARDS/2;i++) {
 			uint16_t data = station_bits[i*2+2];
 			data = (data<<8) + station_bits[i*2+1];
@@ -1136,6 +1137,7 @@ void OpenSprinkler::apply_all_station_bits() {
 				expanders[i]->i2c_write(NXP_OUTPUT_REG, ~data);
 			}
 		}
+		#endif
 	}
 		
 	byte bid, s, sbits;  
@@ -1145,6 +1147,7 @@ void OpenSprinkler::apply_all_station_bits() {
 
 	// Shift out all station bit values
 	// from the highest bit to the lowest
+	# if 0
 	for(bid=0;bid<=MAX_EXT_BOARDS;bid++) {
 		if (status.enabled)
 			sbits = station_bits[MAX_EXT_BOARDS-bid];
@@ -1161,16 +1164,17 @@ void OpenSprinkler::apply_all_station_bits() {
 			digitalWrite(PIN_SR_CLOCK, HIGH);
 		}
 	}
+	#endif
 
 	#if defined(ARDUINO)
 	if((hw_type==HW_TYPE_DC) && engage_booster) {
 		// for DC controller: boost voltage
-		digitalWrite(PIN_BOOST_EN, LOW);	// disable output path
-		digitalWrite(PIN_BOOST, HIGH);		// enable boost converter
+		digitalWrite(PIN_BOOST_EN, LOW);		// disable output path
+		digitalWrite(PIN_BOOST, HIGH);			// enable boost converter
 		delay((int)iopts[IOPT_BOOST_TIME]<<2);	// wait for booster to charge
 		digitalWrite(PIN_BOOST, LOW);			// disable boost converter
 
-		digitalWrite(PIN_BOOST_EN, HIGH); // enable output path
+		digitalWrite(PIN_BOOST_EN, HIGH); 		// enable output path
 		digitalWrite(PIN_SR_LATCH, HIGH);
 		engage_booster = 0;
 	} else {
@@ -1832,11 +1836,10 @@ void OpenSprinkler::factory_reset() {
 void OpenSprinkler::options_setup() {
 	// Check reset conditions:
 	if (file_read_byte(IOPTS_FILENAME, IOPT_FW_VERSION)<219 ||	// fw version is invalid (<219)
-			!file_exists(DONE_FILENAME)) {													// done file doesn't exist
+			!file_exists(DONE_FILENAME)) {						// done file doesn't exist
 
 		factory_reset();
 	} else	{
-
 		iopts_load();
 		nvdata_load();
 		last_reboot_cause = nvdata.reboot_cause;
@@ -1965,28 +1968,15 @@ void OpenSprinkler::nvdata_save() {
 /** Load integer options from file */
 void OpenSprinkler::iopts_load() {
 	file_read_block(IOPTS_FILENAME, iopts, 0, NUM_IOPTS);
-	nstations = iopts[IOPT_EXT_BOARDS]+1;
+	nstations = iopts[IOPT_STATIONS]+1;
 	status.enabled = iopts[IOPT_DEVICE_ENABLE];
 	iopts[IOPT_FW_VERSION] = OS_FW_VERSION;
 	iopts[IOPT_FW_MINOR] = OS_FW_MINOR;
-        /* Reject the former default 50.97.210.169 NTP IP address as
-         * it no longer works, yet is carried on by people's saved
-         * configs when they upgrade from older versions.
-         * IOPT_NTP_IP1 = 0 leads to the new good default behavior. */
-        if (iopts[IOPT_NTP_IP1] == 50 && iopts[IOPT_NTP_IP2] == 97 &&
-            iopts[IOPT_NTP_IP3] == 210 && iopts[IOPT_NTP_IP4] == 169) {
-            iopts[IOPT_NTP_IP1] = 0;
-            iopts[IOPT_NTP_IP2] = 0;
-            iopts[IOPT_NTP_IP3] = 0;
-            iopts[IOPT_NTP_IP4] = 0;
-        }
 }
 
 /** Save integer options to file */
 void OpenSprinkler::iopts_save() {
 	file_write_block(IOPTS_FILENAME, iopts, 0, NUM_IOPTS);
-	nstations = iopts[IOPT_EXT_BOARDS]+1;
-	status.enabled = iopts[IOPT_DEVICE_ENABLE];
 }
 
 /** Load a string option from file */
@@ -2545,7 +2535,7 @@ void OpenSprinkler::save_wifi_ip() {
 }
 
 void OpenSprinkler::detect_expanders() {
-	for(byte i=0;i<(MAX_NUM_BOARDS)/2;i++) {
+	for(byte i=0;i<(MAX_NUM_STATIONS/8)/2;i++) {
 		byte address = EXP_I2CADDR_BASE+i;
 		byte type = IOEXP::detectType(address);
 		if(expanders[i]!=NULL) delete expanders[i];

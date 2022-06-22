@@ -81,52 +81,55 @@ struct ConStatus {
 };
 
 struct StationAttributes_ {
-    StationData d   [MAX_NUM_BOARDS];
+    StationData d   [MAX_NUM_STATIONS/8];
 
-    byte attrib_mas [MAX_NUM_BOARDS];
-    byte attrib_igs [MAX_NUM_BOARDS];
-    byte attrib_mas2[MAX_NUM_BOARDS];
-    byte attrib_igs2[MAX_NUM_BOARDS];
-    byte attrib_igrd[MAX_NUM_BOARDS];
-    byte attrib_dis [MAX_NUM_BOARDS];
-    byte attrib_seq [MAX_NUM_BOARDS];
-    byte attrib_spe [MAX_NUM_BOARDS];
+    byte attrib_mas [MAX_NUM_STATIONS/8];
+    byte attrib_igs [MAX_NUM_STATIONS/8];
+    byte attrib_mas2[MAX_NUM_STATIONS/8];
+    byte attrib_igs2[MAX_NUM_STATIONS/8];
+    byte attrib_igrd[MAX_NUM_STATIONS/8];
+    byte attrib_dis [MAX_NUM_STATIONS/8];
+    byte attrib_seq [MAX_NUM_STATIONS/8];
+    byte attrib_spe [MAX_NUM_STATIONS/8];
+
+	#define get_attrib_bit(a, i, b)   ((a [i] >> b) & 1)
+	#define set_attrib_bit(a, i, b, v) (a [i] |= (v << b))
 
     void to_attrib(){
-        int bid, s, sid;
-        byte ty;
-        for(bid=0;bid<MAX_NUM_BOARDS;bid++) {
-            StationAttrib& at = d[bid].attrib;
-            attrib_mas [bid] |= at.mas ;
-            attrib_igs [bid] |= at.igs ;
-            attrib_mas2[bid] |= at.mas2;
-            attrib_igs2[bid] |= at.igs2;
-            attrib_igrd[bid] |= at.igrd;
-            attrib_dis [bid] |= at.dis ;
-            attrib_seq [bid] |= at.seq ;
-            if(d[bid].type!=STN_TYPE_STANDARD) {
-                attrib_spe[bid] |= 1;
+		byte sid, b, i;
+        for(sid=0;sid<MAX_NUM_STATIONS;sid++) {
+			i = sid/8; b = sid%8;
+            StationAttrib& at = d[sid].attrib;
+            set_attrib_bit(attrib_mas , i, b, at.mas );
+            set_attrib_bit(attrib_igs , i, b, at.igs );
+            set_attrib_bit(attrib_mas2, i, b, at.mas2);
+            set_attrib_bit(attrib_igs2, i, b, at.igs2);
+            set_attrib_bit(attrib_igrd, i, b, at.igrd);
+            set_attrib_bit(attrib_dis , i, b, at.dis );
+            set_attrib_bit(attrib_seq , i, b, at.seq );
+            if(d[sid].type!=STN_TYPE_STANDARD) {
+                set_attrib_bit(attrib_spe, i, b, 1);
             }
         }
     }
-
     void from_attrib(){
         // re-package attribute bits and save
-        byte bid, s, sid=0;
+        byte i, b, sid;
         byte ty = STN_TYPE_STANDARD;
-        for(bid=0;bid<MAX_NUM_BOARDS;bid++) {
-            StationAttrib& at = d[bid].attrib;
-            at.mas = attrib_mas [bid] ;
-            at.igs = attrib_igs [bid] ;
-            at.mas2= attrib_mas2[bid];
-            at.igs2= attrib_igs2[bid];
-            at.igrd= attrib_igrd[bid];			 
-            at.dis = attrib_dis [bid] ;
-            at.seq = attrib_seq [bid] ;
+        for(sid=0;sid<MAX_NUM_STATIONS;sid++) {
+			i = sid/8; b = sid%8;
+            StationAttrib& at = d[sid].attrib;
+            at.mas = get_attrib_bit(attrib_mas , i, b);
+            at.igs = get_attrib_bit(attrib_igs , i, b);
+            at.mas2= get_attrib_bit(attrib_mas2, i, b);
+			at.igs2= get_attrib_bit(attrib_igs2, i, b);
+			at.igrd= get_attrib_bit(attrib_igrd, i, b);
+            at.dis = get_attrib_bit(attrib_dis , i, b);
+            at.seq = get_attrib_bit(attrib_seq , i, b);
             at.gid = 0;
-            if(attrib_spe[bid]==0) {
+            if( get_attrib_bit(attrib_spe, i, b) == 0) {
                 // if station special bit is 0, make sure to write type STANDARD
-                d[bid].type = STN_TYPE_STANDARD;
+                d[i].type = STN_TYPE_STANDARD;
             }
         }        
     }

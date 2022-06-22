@@ -4963,16 +4963,16 @@ var showHome = ( function() {
 
 			cards += "<span class='btn-no-border ui-btn " + ( ( isStationMaster( i ) ) ? "ui-icon-master" : "ui-icon-gear" ) +
 				" card-icon ui-btn-icon-notext station-settings' data-station='" + i + "' id='attrib-" + i + "' " +
-				( hasMaster ? ( "data-um='" + ( ( controller.stations.masop[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasMaster2 ? ( "data-um2='" + ( ( controller.stations.masop2[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasIR ? ( "data-ir='" + ( ( controller.stations.ignore_rain[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN1 ? ( "data-sn1='" + ( ( controller.stations.ignore_sn1[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN2 ? ( "data-sn2='" + ( ( controller.stations.ignore_sn2[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasAR ? ( "data-ar='" + ( ( controller.stations.act_relay[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSD ? ( "data-sd='" + ( ( controller.stations.stn_dis[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasGroup ? ( "data-grp='" + controller.stations.stn_grp[ i ] + "' " ) : "" ) +
-				( hasSpecial ? ( "data-hs='" + ( ( controller.stations.stn_spe[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasGroup ? ( "data-grp='"     + controller.stations.stn_grp        [ i ] + "' " ) : "" ) +
+				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
 				"></span>";
 
 			if ( !isStationMaster( i ) ) {
@@ -8346,60 +8346,7 @@ function expandProgram( program ) {
 
 // Translate program array into easier to use data
 function readProgram( program ) {
-	if ( checkOSVersion( 210 ) ) {
-		return readProgram21( program );
-	} else {
-		return readProgram183( program );
-	}
-}
-
-function readProgram183( program ) {
-	var days0 = program[ 1 ],
-		days1 = program[ 2 ],
-		even = false,
-		odd = false,
-		interval = false,
-		days = "",
-		stations = "",
-		newdata = {};
-
-	newdata.en = program[ 0 ];
-	for ( var n = 0; n < controller.programs.nboards; n++ ) {
-		var bits = program[ 7 + n ];
-		stations += ( bits ) ? "1" : "0";
-	}
-	newdata.stations = stations;
-	newdata.duration = program[ 6 ];
-
-	newdata.start = program[ 3 ];
-	newdata.end = program[ 4 ];
-	newdata.interval = program[ 5 ];
-
-	if ( ( days0 & 0x80 ) && ( days1 > 1 ) ) {
-
-		//This is an interval program
-		days = [ days1, days0 & 0x7f ];
-		interval = true;
-	} else {
-
-		//This is a weekly program
-		for ( var d = 0; d < 7; d++ ) {
-			if ( days0 & ( 1 << d ) ) {
-				days += "1";
-			} else {
-				days += "0";
-			}
-		}
-		if ( ( days0 & 0x80 ) && ( days1 === 0 ) ) {even = true;}
-		if ( ( days0 & 0x80 ) && ( days1 === 1 ) ) {odd = true;}
-	}
-
-	newdata.days = days;
-	newdata.is_even = even;
-	newdata.is_odd = odd;
-	newdata.is_interval = interval;
-
-	return newdata;
+	return readProgram21( program );
 }
 
 // Read program for OpenSprinkler 2.1+
@@ -9049,90 +8996,7 @@ function deleteProgram( id ) {
 function submitProgram( id ) {
 	$( "#program-" + id ).find( ".hasChanges" ).removeClass( "hasChanges" );
 
-	if ( checkOSVersion( 210 ) ) {
-		submitProgram21( id );
-	} else {
-		submitProgram183( id );
-	}
-}
-
-function submitProgram183( id ) {
-	var program = [],
-		days = [ 0, 0 ],
-		stationSelected = 0,
-		en = ( $( "#en-" + id ).is( ":checked" ) ) ? 1 : 0,
-		daysin, i, s;
-
-	program[ 0 ] = en;
-
-	if ( $( "#days_week-" + id ).is( ":checked" ) ) {
-		daysin = $( "#d-" + id ).val();
-		daysin = ( daysin === null ) ? [] : parseIntArray( daysin );
-		for ( i = 0; i < 7; i++ ) {if ( $.inArray( i, daysin ) !== -1 ) {days[ 0 ] |= ( 1 << i ); }}
-		if ( days[ 0 ] === 0 ) {
-			showerror( _( "Error: You have not selected any days of the week." ) );
-			return;
-		}
-		if ( $( "#days_rst-" + id ).val() === "odd" ) {
-			days[ 0 ] |= 0x80; days[ 1 ] = 1;
-		} else if ( $( "#days_rst-" + id ).val() === "even" ) {
-			days[ 0 ] |= 0x80; days[ 1 ] = 0;
-		}
-	} else if ( $( "#days_n-" + id ).is( ":checked" ) ) {
-		days[ 1 ] = parseInt( $( "#every-" + id ).val(), 10 );
-		if ( !( days[ 1 ] >= 2 && days[ 1 ] <= 128 ) ) {showerror( _( "Error: Interval days must be between 2 and 128." ) );return;}
-		days[ 0 ] = parseInt( $( "#starting-" + id ).val(), 10 );
-		if ( !( days[ 0 ] >= 0 && days[ 0 ] < days[ 1 ] ) ) {showerror( _( "Error: Starting in days wrong." ) );return;}
-		days[ 0 ] |= 0x80;
-	}
-	program[ 1 ] = days[ 0 ];
-	program[ 2 ] = days[ 1 ];
-
-	program[ 3 ] = parseInt( $( "#start-" + id ).val() );
-	program[ 4 ] = parseInt( $( "#end-" + id ).val() );
-
-	if ( program[ 3 ] > program[ 4 ] ) {showerror( _( "Error: Start time must be prior to end time." ) );return;}
-
-	program[ 5 ] = parseInt( $( "#interval-" + id ).val() / 60 );
-
-	var sel = $( "[id^=station_][id$=-" + id + "]" ),
-		total = sel.length,
-		nboards = total / 8;
-
-	program[ 6 ] = parseInt( $( "#duration-" + id ).val() );
-	var stations = [ 0 ], bid, sid;
-	for ( bid = 0; bid < nboards; bid++ ) {
-		stations[ bid ] = 0;
-		for ( s = 0; s < 8; s++ ) {
-			sid = bid  + s;
-			if ( $( "#station_" + sid + "-" + id ).is( ":checked" ) ) {
-				stations[ bid ] |= 1 << s; stationSelected = 1;
-			}
-		}
-	}
-	program = JSON.stringify( program.concat( stations ) );
-
-	if ( stationSelected === 0 ) {showerror( _( "Error: You have not selected any stations." ) );return;}
-	$.mobile.loading( "show" );
-	if ( id === "new" ) {
-		sendToOS( "/cp?pw=&pid=-1&v=" + program ).done( function() {
-			$.mobile.loading( "hide" );
-			updateControllerPrograms( function() {
-				$.mobile.document.one( "pageshow", function() {
-					showerror( _( "Program added successfully" ) );
-				} );
-				goBack();
-			} );
-		} );
-	} else {
-		sendToOS( "/cp?pw=&pid=" + id + "&v=" + program ).done( function() {
-			$.mobile.loading( "hide" );
-			updateControllerPrograms( function() {
-				updateProgramHeader();
-			} );
-			showerror( _( "Program has been updated" ) );
-		} );
-	}
+	submitProgram21( id );
 }
 
 function submitProgram21( id, ignoreWarning ) {

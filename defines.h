@@ -81,17 +81,17 @@ typedef unsigned long ulong;
 #define NOTIFY_STATION_ON      0x0100
 
 /** HTTP request macro defines */
-#define HTTP_RQT_SUCCESS			 0
-#define HTTP_RQT_NOT_RECEIVED -1
-#define HTTP_RQT_CONNECT_ERR	-2
-#define HTTP_RQT_TIMEOUT			-3
-#define HTTP_RQT_EMPTY_RETURN	-4
+#define HTTP_RQT_SUCCESS	    0
+#define HTTP_RQT_NOT_RECEIVED  -1
+#define HTTP_RQT_CONNECT_ERR   -2
+#define HTTP_RQT_TIMEOUT       -3
+#define HTTP_RQT_EMPTY_RETURN  -4
 
 /** Sensor macro defines */
 #define SENSOR_TYPE_NONE    0x00
 #define SENSOR_TYPE_RAIN    0x01	// rain sensor
 #define SENSOR_TYPE_FLOW    0x02	// flow sensor
-#define SENSOR_TYPE_SOIL    0x03  // soil moisture sensor
+#define SENSOR_TYPE_SOIL    0x03    // soil moisture sensor
 #define SENSOR_TYPE_PSWITCH 0xF0	// program switch sensor
 #define SENSOR_TYPE_OTHER   0xFF
 
@@ -125,15 +125,7 @@ typedef unsigned long ulong;
 #define LED_FAST_BLINK 100
 #define LED_SLOW_BLINK 500
 
-/** Storage / zone expander defines */
-#if defined(ARDUINO)
-	#define MAX_EXT_BOARDS    24  // maximum number of 8-zone expanders (each 16-zone expander counts as 2)
-#else
-	#define MAX_EXT_BOARDS		24 // allow more zones for linux-based firmwares
-#endif
-
-#define MAX_NUM_BOARDS    (1+MAX_EXT_BOARDS)  // maximum number of 8-zone boards including expanders
-#define MAX_NUM_STATIONS  (MAX_NUM_BOARDS*8)  // maximum number of stations
+#define MAX_NUM_STATIONS  24  // maximum number of stations
 #define STATION_NAME_SIZE 32    // maximum number of characters in each station name
 #define MAX_SOPTS_SIZE    160   // maximum string option size
 
@@ -166,7 +158,7 @@ enum {
 	IOPT_HTTPPORT_0,
 	IOPT_HTTPPORT_1,
 	IOPT_HW_VERSION, //ro
-	IOPT_EXT_BOARDS,
+	IOPT_STATIONS,
 	IOPT_SEQUENTIAL_RETIRED, //ro
 	IOPT_STATION_DELAY_TIME,
 	IOPT_MASTER_STATION,
