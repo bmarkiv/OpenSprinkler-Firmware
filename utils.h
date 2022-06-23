@@ -41,7 +41,7 @@ void remove_file(const char *fname);
 bool file_exists(const char *fname);
 long file_length(const char *fn);
 
-void file_read_block (const char *fname, void *dst, ulong pos, ulong len);
+bool file_read_block (const char *fname, void *dst, ulong pos, ulong len);
 void file_write_block(const char *fname, const void *src, ulong pos, ulong len);
 void file_copy_block (const char *fname, ulong from, ulong to, ulong len, void *tmp=0);
 byte file_read_byte (const char *fname, ulong pos);

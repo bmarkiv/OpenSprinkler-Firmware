@@ -243,8 +243,7 @@ byte findKeyVal (const char *str,char *strbuf, uint16_t maxlen,const char *key,b
 }
 
 void rewind_ether_buffer() {
-	bfill = ether_buffer;
-	ether_buffer[0] = 0;
+	bfill.init(ether_buffer, ETHER_BUFFER_SIZE);
 }
 
 void send_packet(bool final=false) {
@@ -264,6 +263,17 @@ void send_packet(bool final=false) {
 	rewind_ether_buffer();
 	return;
 #endif
+}
+void send_packet(const char *packet, int packet_size){
+	#if defined(ESP8266)
+		if (m_client) {
+			m_client->write((const uint8_t *)packet, packet_size);
+		} else {
+			wifi_server->client().write((const uint8_t *)packet, packet_size);
+		}
+	#else
+		m_client->write((const uint8_t *)packet, packet_size);
+	#endif	
 }
 
 char dec2hexchar(byte dec) {
@@ -449,9 +459,10 @@ boolean check_password(char *p)
 void server_json_stations_attrib(const char* name, byte *attrib)
 {
 	bfill.emit_p(PSTR("\"$F\":["), name);
-	for(byte i=0;i<os.nstations/8;i++) {
+	int attribs = os.nstations/8; if (attribs == 0) attribs = 1;
+	for(byte i=0;i<attribs;i++) {
 		bfill.emit_p(PSTR("$D"), attrib[i]);
-		if(i!=os.nstations/8-1)
+		if(i!=attribs-1)
 			bfill.emit_p(PSTR(","));
 	}
 	bfill.emit_p(PSTR("],"));
@@ -522,12 +533,12 @@ void server_json_station_special() {
 void server_change_stations_attrib(char *p, char header, byte *attrib)
 {
 	char tbuf2[5] = {0, 0, 0, 0, 0};
-	byte sid;
 	tbuf2[0]=header;
-	for(sid=0;sid<os.nstations/8;sid++) {
-		itoa(sid, tbuf2+1, 10);
+	int attribs = os.nstations/8; if (attribs == 0) attribs = 1;
+	for(byte i=0;i<attribs;i++) {
+		itoa(i, tbuf2+1, 10);
 		if(findKeyVal(p, tmp_buffer, TMP_BUFFER_SIZE, tbuf2)) {
-			attrib[sid] = atoi(tmp_buffer);
+			attrib[i] = atoi(tmp_buffer);
 		}
 	}
 }
@@ -995,7 +1006,7 @@ void server_json_options_main() {
 			bfill.emit_p(PSTR(","));
 	}
 
-	bfill.emit_p(PSTR(",\"dexp\":$D,\"mexp\":$D,\"hwt\":$D}"), os.detect_exp(), 0, os.hw_type);
+	bfill.emit_p(PSTR(",\"dexp\":$D,\"mexp\":$D,\"hwt\":$D}"), os.detect_exp(), MAX_NUM_STATIONS, os.hw_type);
 }
 
 /** Output Options */
@@ -1011,7 +1022,7 @@ void server_json_options() {
 
 void server_json_programs_main() {
 
-	bfill.emit_p(PSTR("\"nprogs\":$D,\"nboards\":$D,\"mnp\":$D,\"mnst\":$D,\"pnsize\":$D,\"pd\":["),
+	bfill.emit_p(PSTR("\"nprogs\":$D,\"nstations\":$D,\"mnp\":$D,\"mnst\":$D,\"pnsize\":$D,\"pd\":["),
 							 pd.nprograms, os.nstations, MAX_NUM_PROGRAMS, MAX_NUM_STARTTIMES, PROGRAM_NAME_SIZE);
 	byte pid, i;
 	ProgramStruct prog;
@@ -1118,7 +1129,7 @@ void server_json_controller_main() {
 							#if defined(CHECK_WEATHER)
 							strlen(wt_rawData)==0?"{}":wt_rawData, wt_errCode
 							#else
-							"{}", 0
+							"{}", HTTP_RQT_NOT_RECEIVED
 							#endif
 							 );
 
@@ -1140,11 +1151,6 @@ void server_json_controller_main() {
 	bfill.emit_p(PSTR("0],\"ps\":["));
 	// print ps
 	for(sid=0;sid<os.nstations;sid++) {
-		// if available ether buffer is getting small
-		// send out a packet
-		if(available_ether_buffer() <= 0) {
-			send_packet();
-		}
 		unsigned long rem = 0;
 		byte qid = pd.station_qid[sid];
 		RuntimeQueueStruct *q = pd.queue + qid;

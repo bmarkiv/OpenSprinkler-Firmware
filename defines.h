@@ -33,6 +33,7 @@ typedef unsigned char byte;
 typedef unsigned long ulong;
 
 #define TMP_BUFFER_SIZE      255   // scratch buffer size
+#define ETHER_BUFFER_SIZE   2048
 
 /** Firmware version, hardware version, and maximal values */
 #define OS_FW_VERSION  219  // Firmware version: 220 means 2.2.0
@@ -276,9 +277,6 @@ enum {
 	#define PIN_EXP_SENSE      4    // expansion board sensing pin (A4)
 	#define PIN_CURR_SENSE     7    // current sensing pin (A7)
 	#define PIN_CURR_DIGITAL  24    // digital pin index for A7
-
-	#define ETHER_BUFFER_SIZE   2048
-
 	#define 	wdt_reset()   __asm__ __volatile__ ("wdr")  // watchdog timer reset
 
 	#define pinModeExt        pinMode
@@ -298,7 +296,6 @@ enum {
 
 	#define PIN_CURR_SENSE    A0
 	#define PIN_FREE_LIST     {} // no free GPIO pin at the moment
-	#define ETHER_BUFFER_SIZE   2048
 
 	#define PIN_ETHER_CS       16 // ENC28J60 CS (chip select pin) is 16 on OS 3.2.
 
@@ -382,7 +379,6 @@ enum {
 	//#define PIN_BUTTON_3      25    // button 3
 
 	#define PIN_FREE_LIST           {2,3,5,6,7,8,9,10,11,12,13,14,16,18,19,20,21,23,24,25,26}  // free GPIO pins
-	#define ETHER_BUFFER_SIZE   16384
 
 #elif defined(OSBO) // for OSBo
 
@@ -397,7 +393,6 @@ enum {
 	#define PIN_RFTX          51    // RF transmitter pin
 
 	#define PIN_FREE_LIST     {38,39,34,35,45,44,26,47,27,65,63,62,37,36,33,32,61,86,88,87,89,76,77,74,72,73,70,71}
-	#define ETHER_BUFFER_SIZE   16384
 
 #else // for demo / simulation
 	// use fake hardware pins
@@ -414,7 +409,6 @@ enum {
 	#define PIN_SENSOR2			0
 	#define PIN_RFTX     0
 	#define PIN_FREE_LIST	{}
-	#define ETHER_BUFFER_SIZE   16384
 #endif
 
 #if defined(ENABLE_DEBUG) /** Serial debug functions */

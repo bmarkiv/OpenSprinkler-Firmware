@@ -343,7 +343,7 @@ long file_length(const char *fn) {
 
 
 // file functions
-void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
+bool file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 #if defined(ESP8266)
 
 	// do not use File.readBytes or readBytesUntil because it's very slow  
@@ -352,6 +352,7 @@ void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 		f.seek(pos, SeekSet);
 		f.read((byte*)dst, len);
 		f.close();
+		return true;
 	}
 
 #elif defined(ARDUINO)
@@ -362,6 +363,7 @@ void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 		file.seekSet(pos);
 		file.read(dst, len);
 		file.close();
+		return true;
 	}
 
 #else
@@ -371,9 +373,11 @@ void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 		fseek(fp, pos, SEEK_SET);
 		fread(dst, 1, len, fp);
 		fclose(fp);
+		return true;
 	}  
 
 #endif
+	return false;
 }
 
 void file_write_block(const char *fn, const void *src, ulong pos, ulong len) {

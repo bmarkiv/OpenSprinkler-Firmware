@@ -62,8 +62,8 @@ void remote_http_callback(char*);
 #define CLIENT_READ_TIMEOUT			  5			// client read timeout (in seconds)
 #define DHCP_CHECKLEASE_INTERVAL  3600L // DHCP check lease interval (in seconds)
 // Define buffers: need them to be sufficiently large to cover string option reading
-char ether_buffer[ETHER_BUFFER_SIZE*2]; // ethernet buffer, make it twice as large to allow overflow
-char tmp_buffer[TMP_BUFFER_SIZE*2]; // scratch buffer, make it twice as large to allow overflow
+char ether_buffer[ETHER_BUFFER_SIZE]; // ethernet buffer, make it twice as large to allow overflow
+char tmp_buffer[TMP_BUFFER_SIZE]; // scratch buffer, make it twice as large to allow overflow
 
 // ====== Object defines ======
 OpenSprinkler os; 	// OpenSprinkler object
@@ -1488,10 +1488,9 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 
 	if (ifttt_enabled) {
 		strcat_P(postval, PSTR("\"}"));
-
-		//char postBuffer[1500];
-		BufferFiller bf = ether_buffer;
-		bf.emit_p(PSTR("POST /trigger/sprinkler/with/key/$O HTTP/1.0\r\n"
+		BufferFiller bfill;
+		bfill.init(ether_buffer, sizeof(ether_buffer));
+		bfill.emit_p(PSTR("POST /trigger/sprinkler/with/key/$O HTTP/1.0\r\n"
 						"Host: $S\r\n"
 						"Accept: */*\r\n"
 						"Content-Length: $D\r\n"

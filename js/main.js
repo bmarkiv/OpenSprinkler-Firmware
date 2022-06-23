@@ -973,7 +973,7 @@ function updateControllerPrograms( callback ) {
 
 		// If the controller is using firmware 1.8.3, then parse the script tag for variables
 		return sendToOS( "/gp?d=0" ).done( function( programs ) {
-			var vars = programs.match( /(nprogs|nboards|mnp)=[\w|\d|.\"]+/g ),
+			var vars = programs.match( /(nprogs|nstations|mnp)=[\w|\d|.\"]+/g ),
 				progs = /pd=\[\];(.*);/.exec( programs ),
 				newdata = {}, tmp, prog;
 

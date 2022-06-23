@@ -258,7 +258,7 @@ const byte iopt_max[] PROGMEM = {
 	255,
 	255,
 	0,
-	MAX_EXT_BOARDS,
+	MAX_NUM_STATIONS,
 	1,
 	255,
 	MAX_NUM_STATIONS,
@@ -1715,7 +1715,7 @@ void OpenSprinkler::switch_remotestation(RemoteStationData *data, bool turnon) {
 	// use tmp_buffer starting at a later location
 	// because remote station data is loaded at the beginning
 	char *p = tmp_buffer;
-	BufferFiller bf = p;
+	BufferFiller bf; bf.init(tmp_buffer, TMP_BUFFER_SIZE);
 	// if auto refresh is enabled, we give a fixed duration each time, and auto refresh will renew it periodically
 	// if no auto refresh, we will give the maximum allowed duration, and station will be turned off when off command is sent
 	uint16_t timer = iopts[IOPT_SPE_AUTO_REFRESH]?4*MAX_NUM_STATIONS:64800;  
@@ -1746,7 +1746,7 @@ void OpenSprinkler::switch_httpstation(HTTPStationData *data, bool turnon) {
 	char * cmd = turnon ? on_cmd : off_cmd;
 
 	char *p = tmp_buffer;
-	BufferFiller bf = p;
+	BufferFiller bf; bf.init(tmp_buffer, TMP_BUFFER_SIZE);
 	
 	if(cmd==NULL || server==NULL) return; // proceed only if cmd and server are valid
 	
@@ -1778,7 +1778,7 @@ void OpenSprinkler::factory_reset() {
 	lcd_print_line_clear_pgm(PSTR("Factory reset"), 0);
 	lcd_print_line_clear_pgm(PSTR("Please Wait..."), 1);
 #else
-	DEBUG_PRINT(F("factory reset..."));
+	DEBUG_LOGF("factory reset %s\n", "...");
 #endif		
 
 	// 1. reset integer options (by saving default values)
