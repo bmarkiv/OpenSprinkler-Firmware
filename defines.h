@@ -125,8 +125,9 @@ typedef unsigned long ulong;
 #define LED_FAST_BLINK 100
 #define LED_SLOW_BLINK 500
 
-#define MAX_NUM_STATIONS  24  // maximum number of stations
-#define STATION_NAME_SIZE 32    // maximum number of characters in each station name
+#define MAX_EXT_BOARDS      1
+#define MAX_NUM_STATIONS   24   // maximum number of stations
+#define STATION_NAME_SIZE  32   // maximum number of characters in each station name
 #define MAX_SOPTS_SIZE    160   // maximum string option size
 
 #define STATION_SPECIAL_DATA_SIZE  (TMP_BUFFER_SIZE - STATION_NAME_SIZE - 12)

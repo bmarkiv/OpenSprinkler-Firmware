@@ -1177,7 +1177,7 @@ void server_json_controller() {
 
 /** Output homepage */
 void server_home_(const char *uri) {
-	DEBUG_PRINT("server_home: uri="); DEBUG_PRINTLN(uri);
+	DEBUG_LOGF("server_home: uri=%s\n", uri);
 	if (uri && uri[0] == '/' && uri[1] == 0) {
 		rewind_ether_buffer();
 		print_html_standard_header();
@@ -1902,26 +1902,26 @@ const char _url_keys[] PROGMEM =
 // Server function handlers
 URLHandler urls[] = {
 	server_change_values,		// cv
-	server_json_controller, // jc
-	server_delete_program,	// dp
-	server_change_program,	// cp
-	server_change_runonce,	// cr
-	server_manual_program,	// mp  
-	server_moveup_program,	// up
+	server_json_controller, 	// jc
+	server_delete_program,		// dp
+	server_change_program,		// cp
+	server_change_runonce,		// cr
+	server_manual_program,		// mp  
+	server_moveup_program,		// up
 	server_json_programs,		// jp
-	server_change_options,	// co
+	server_change_options,		// co
 	server_json_options,		// jo
-	server_change_password, // sp
+	server_change_password, 	// sp
 	server_json_status,			// js
 	server_change_manual,		// cm
-	server_change_stations, // cs
+	server_change_stations, 	// cs
 	server_json_stations,		// jn
 	server_json_station_special,// je
-	server_json_log,				// jl
+	server_json_log,			// jl
 	server_delete_log,			// dl
-	server_view_scripturl,	// su
-	server_change_scripturl,// cu
-	server_json_all,				// ja
+	server_view_scripturl,		// su
+	server_change_scripturl,	// cu
+	server_json_all,			// ja
 #if defined(ARDUINO)  
   server_json_debug,			// db
 #endif	

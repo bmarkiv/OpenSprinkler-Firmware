@@ -43,12 +43,12 @@ struct get_file_request {
 		int name_length = strlen(this->file_name);
 		strcat(this->file_name, ".gz");
 		this->length = file_length(this->file_name);
-        DEBUG_PRINTF("File: name=%s, length=%u\n", this->file_name, this->length);
+        // DEBUG_PRINTF("File: name=%s, length=%u\n", this->file_name, this->length);
 		gzip = length > 0;
 		if (!gzip) {
 			file_name[name_length] = 0;
 			length = file_length(file_name);
-            DEBUG_PRINTF("File: name=%s, length=%u\n", this->file_name, this->length);
+            // DEBUG_PRINTF("File: name=%s, length=%u\n", this->file_name, this->length);
 		}
 	}
 
@@ -71,7 +71,7 @@ struct get_file_request {
         if (this->type == file_type::none)
             return false;
 
-        DEBUG_PRINTF("Sending file: name=%s, length=%u\n", this->file_name, this->length);
+        // DEBUG_PRINTF("Sending file: name=%s, length=%u\n", this->file_name, this->length);
 		
 		if (this->length < 0){
 			send_page_not_found();
@@ -111,9 +111,9 @@ struct get_file_request {
 			#else
             fclose(fp);
             #endif
-			DEBUG_PRINTF("File %s (%u) sent\n", this->file_name, this->length);
+			DEBUG_LOGF("File %s (%u) sent\n", this->file_name, this->length);
 		} else {
-			DEBUG_PRINTF("Failed to open file: %s\n", this->file_name);
+			DEBUG_LOGF("Failed to open file: %s\n", this->file_name);
 		}
 
         if (m_client)

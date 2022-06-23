@@ -2803,7 +2803,7 @@ function checkURLandUpdateWeather() {
 		updateWeather();
 	};
 
-	if ( controller.settings.wsp ) {
+	if ( controller.settings && controller.settings.wsp ) {
 		if ( controller.settings.wsp === "weather.opensprinkler.com" ) {
 			finish();
 			return;
@@ -4375,43 +4375,43 @@ function showOptions( expandItem ) {
 		}
 
 		if ( controller.options.mas ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "m" + i + "=255&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_rain === "object" ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "i" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_sn1 === "object" ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "j" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_sn2 === "object" ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "k" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.act_relay === "object" ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "a" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.stn_dis === "object" ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "d" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.stn_seq === "object" ) {
-			for ( i = 0; i < controller.settings.nbrd; i++ ) {
+			for ( i = 0; i < controller.stations.snames.length; i++ ) {
 				cs += "q" + i + "=255&";
 			}
 		}
@@ -4963,16 +4963,16 @@ var showHome = ( function() {
 
 			cards += "<span class='btn-no-border ui-btn " + ( ( isStationMaster( i ) ) ? "ui-icon-master" : "ui-icon-gear" ) +
 				" card-icon ui-btn-icon-notext station-settings' data-station='" + i + "' id='attrib-" + i + "' " +
-				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
 				( hasGroup ? ( "data-grp='"     + controller.stations.stn_grp        [ i ] + "' " ) : "" ) +
-				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ parseInt( i ) ]  ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
 				"></span>";
 
 			if ( !isStationMaster( i ) ) {
@@ -5400,98 +5400,61 @@ var showHome = ( function() {
 				relay = {},
 				disable = {},
 				names = {},
-				attrib, bid, sid, s;
+				attrib, b, sid, s;
 
-			for ( bid = 0; bid < controller.settings.nbrd; bid++ ) {
-				if ( hasMaster ) {
-					master[ "m" + bid ] = 0;
-				}
-				if ( hasMaster2 ) {
-					master2[ "n" + bid ] = 0;
-				}
-				if ( hasSequential ) {
-					sequential[ "q" + bid ] = 0;
-				}
-				if ( hasSpecial ) {
-					special[ "p" + bid ] = 0;
-				}
-				if ( hasIR ) {
-					rain[ "i" + bid ] = 0;
-				}
-				if ( hasSN1 ) {
-					sensor1[ "j" + bid ] = 0;
-				}
-				if ( hasSN2 ) {
-					sensor2[ "k" + bid ] = 0;
-				}
-				if ( hasAR ) {
-					relay[ "a" + bid ] = 0;
-				}
-				if ( hasSD ) {
-					disable[ "d" + bid ] = 0;
-				}
-
-				
-				sid = bid;
+			for ( sid = 0; sid < controller.stations.snames.length; sid++ ) {
 				attrib = page.find( "#attrib-" + sid );
-
+				b = sid / 8;
+				s = sid % 8;
 				if ( hasMaster ) {
-					master[ "m" + bid ] = attrib.data( "um" );
+					if (master[ "m" + b ] === undefined)  master[ "m" + b ] = 0;
+					master[ "m" + b ] += ( attrib.data( "um" ) << s );
 				}
-
 				if ( hasMaster2 ) {
-					master2[ "n" + bid ] =  attrib.data( "um2" );
+					if (master2[ "n" + b ] === undefined) master2[ "n" + b ] = 0;
+					master2[ "n" + b ] += ( attrib.data( "um2" ) << s );
 				}
-
 				if ( hasSequential ) {
-					sequential[ "q" + bid ] = attrib.data( "us" );
+					if (sequential[ "q" + b ] === undefined) sequential[ "q" + b ] = 0;
+					sequential[ "q" + b ] += ( attrib.data( "us" ) << s );
 				}
-
-				if ( hasGroup ) {
-					group[ "g" + ( bid ) ] = attrib.data( "grp" );
-				}
-
 				if ( hasSpecial ) {
-					special[ "p" + bid ] = attrib.data( "hs" ) ? 1 : 0;
+					if (special[ "p" + b ] === undefined) special[ "p" + b ] = 0;
+					special[ "p" + b ] += ( ( attrib.data( "hs" ) ? 1 : 0 ) << s );
 				}
-
 				if ( hasIR ) {
-					rain[ "i" + bid ] = attrib.data( "ir" );
+					if (rain[ "i" + b ] === undefined) rain[ "i" + b ] = 0;
+					rain[ "i" + b ] += ( attrib.data( "ir" ) << s );
 				}
-
 				if ( hasSN1 ) {
-					sensor1[ "j" + bid ] = attrib.data( "sn1" );
+					if (sensor1[ "j" + b ] === undefined) sensor1[ "j" + b ] = 0;
+					sensor1[ "j" + b ] += ( attrib.data( "sn1" ) << s );
 				}
-
 				if ( hasSN2 ) {
-					sensor2[ "k" + bid ] = attrib.data( "sn2" );
+					if (sensor2[ "k" + b ] === undefined) sensor2[ "k" + b ] = 0;
+					sensor2[ "k" + b ] += ( attrib.data( "sn2" ) << s );
 				}
-
 				if ( hasAR ) {
-					relay[ "a" + bid ] = attrib.data( "ar" );
+					if (relay[ "a" + b ] === undefined) relay[ "a" + b ] = 0;
+					relay[ "a" + b ] += ( attrib.data( "ar" ) << s );
 				}
-
 				if ( hasSD ) {
-					disable[ "d" + bid ] = attrib.data( "sd" );
+					if (disable[ "d" + b ] === undefined) disable[ "d" + b ] = 0;
+					disable[ "d" + b ] += ( attrib.data( "sd" ) << s );
 				}
-
-				// Only send the name of the station being updated
-				if ( sid === id ) {
-
-					// Because the firmware has a bug regarding spaces, let us replace them out now with a compatible seperator
-					if ( is208 ) {
-						names[ "s" + sid ] = page.find( "#station_" + sid ).text().replace( /\s/g, "_" );
-					} else {
-						names[ "s" + sid ] = page.find( "#station_" + sid ).text();
-					}
-
-					if ( hasSpecial && attrib.data( "hs" ) ) {
-						special.st = attrib.data( "hs" );
-						special.sd = attrib.data( "specialData" );
-						special.sid = id;
-					}
+				if ( hasGroup ) {
+					group[ "g" + sid ] = attrib.data( "grp" );
 				}
 			}
+				// Only send the name of the station being updated
+				names[ "s" + id ] = page.find( "#station_" + id ).text();
+
+				if ( hasSpecial && attrib.data( "hs" ) ) {
+					special.st = attrib.data( "hs" );
+					special.sd = attrib.data( "specialData" );
+					special.sid = id;
+				}
+
 
 			$.mobile.loading( "show" );
 			sendToOS( "/cs?pw=&" + $.param( names ) +
@@ -5638,16 +5601,16 @@ var showHome = ( function() {
 						card.find( ".station-settings" ).removeClass( "ui-icon-master" ).addClass( "ui-icon-gear" );
 					}
 					card.find( ".station-settings" ).data( {
-						um: hasMaster ? ( ( controller.stations.masop[i]) ? 1 : 0 ) : undefined,
-						um2: hasMaster2 ? ( ( controller.stations.masop2[i]) ? 1 : 0 ) : undefined,
-						ir: hasIR ? ( ( controller.stations.ignore_rain[i]) ? 1 : 0 ) : undefined,
-						sn1: hasSN1 ? ( ( controller.stations.ignore_sn1[i]) ? 1 : 0 ) : undefined,
-						sn2: hasSN2 ? ( ( controller.stations.ignore_sn2[i]) ? 1 : 0 ) : undefined,
-						ar: hasAR ? ( ( controller.stations.act_relay[i]) ? 1 : 0 ) : undefined,
-						sd: hasSD ? ( ( controller.stations.stn_dis[i]) ? 1 : 0 ) : undefined,
-						us: hasSequential ? ( ( controller.stations.stn_seq[i]) ? 1 : 0 ) : undefined,
+						um: hasMaster ?     ( ( controller.stations.masop      [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						um2: hasMaster2 ?   ( ( controller.stations.masop2     [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						ir: hasIR ?         ( ( controller.stations.ignore_rain[ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sn1: hasSN1 ?       ( ( controller.stations.ignore_sn1 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sn2: hasSN2 ?       ( ( controller.stations.ignore_sn2 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						ar: hasAR ?         ( ( controller.stations.act_relay  [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sd: hasSD ?         ( ( controller.stations.stn_dis    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						us: hasSequential ? ( ( controller.stations.stn_seq    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
 						grp: hasGroup ? controller.stations.stn_grp[ i ] : undefined,
-						hs: hasSpecial ? ( ( controller.stations.stn_spe[i]) ? 1 : 0 ) : undefined
+						hs: hasSpecial ?    ( ( controller.stations.stn_spe    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined
 					} );
 
 					if ( !isStationMaster( i ) && ( isScheduled || isRunning ) ) {
@@ -5979,16 +5942,16 @@ function isStationMaster( sid ) {
 }
 
 function isStationDisabled( sid ) {
-	return ( typeof controller.stations.stn_dis === "object" && ( controller.stations.stn_dis[ parseInt( sid ) ] ) > 0 );
+	return ( typeof controller.stations.stn_dis === "object" && ( controller.stations.stn_dis[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0 );
 }
 
 function isStationSpecial( sid ) {
-	return ( typeof controller.stations.stn_spe === "object" && ( controller.stations.stn_spe[ parseInt( sid ) ] ) > 0 );
+	return ( typeof controller.stations.stn_spe === "object" && ( controller.stations.stn_spe[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0 );
 }
 
 function isStationSequential( sid ) {
 	if ( typeof controller.stations.stn_seq === "object" ) {
-		return ( controller.stations.stn_seq[ parseInt( sid )] ) > 0;
+		return ( controller.stations.stn_seq[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0;
 	} else {
 		return controller.options.seq;
 	}
@@ -6781,7 +6744,7 @@ var getPreview = ( function() {
 			simminutes = 0,
 			simt = Date.UTC( year, month - 1, day, 0, 0, 0, 0 ),
 			simday = ( simt / 1000 / 3600 / 24 ) >> 0,
-			nstations = controller.settings.nbrd,
+			nstations = controller.stations.snames.length,
 			startArray = new Array( nstations ),
 			programArray = new Array( nstations ),
 			endArray = new Array( nstations ),
@@ -6794,7 +6757,7 @@ var getPreview = ( function() {
 			qidArray = new Array( nstations ),
 			lastStopTime = 0,
 			lastSeqStopTime = new Array( 16 ),
-			busy, matchFound, prog, sid, qid, q, sqi;
+			busy, matchFound, prog, sid, qid, q, sqi, bid, bid2, s, s2;
 
 		for ( sid = 0; sid < nstations; sid++ ) {
 			startArray[ sid ] = -1;
@@ -6811,6 +6774,8 @@ var getPreview = ( function() {
 				prog = controller.programs.pd[ pid ];
 				if ( checkMatch( prog, simminutes, simt, simday, devday ) ) {
 					for ( sid = 0; sid < nstations; sid++ ) {
+						bid = sid >> 3;
+						s = sid % 8;
 
 						// Skip master station
 						if ( isStationMaster( sid ) ) {
@@ -6820,7 +6785,7 @@ var getPreview = ( function() {
 						if ( is21 ) {
 
 							// Skip disabled stations
-							if ( controller.stations.stn_dis[ sid ] ) {
+							if ( controller.stations.stn_dis[ bid ] & ( 1 << s ) ) {
 								continue;
 							}
 
@@ -6858,7 +6823,7 @@ var getPreview = ( function() {
 								}
 							}
 						} else {
-							if ( prog[ sid ] ) {
+							if ( prog[ 7 + bid ] & ( 1 << s ) ) {
 								endArray[ sid ] = prog[ 6 ] * controller.options.wl / 100 >> 0;
 								programArray[ sid ] = pid + 1;
 								matchFound = 1;
@@ -6887,8 +6852,9 @@ var getPreview = ( function() {
 								continue;
 							}
 							sid = q.sid;
-
-							if ( controller.stations.stn_seq[ sid ] ) {
+							bid2 = sid >> 3;
+							s2 = sid & 0x07;
+							if ( controller.stations.stn_seq[ bid2 ] & ( 1 << s2 ) ) {
 								q.st = seqAcctime[ q.gid ];
 								seqAcctime[ q.gid ] += q.dur;
 								seqAcctime[ q.gid ] += controller.options.sdt;
@@ -6900,10 +6866,12 @@ var getPreview = ( function() {
 						}
 					} else {
 						for ( sid = 0; sid < nstations; sid++ ) {
+							bid2 = sid >> 3;
+							s2 = sid & 0x07;
 							if ( endArray[ sid ] === 0 || startArray[ sid ] >= 0 ) {
 								continue;
 							}
-							if ( controller.stations.stn_seq[ sid ] ) {
+							if ( controller.stations.stn_seq[ bid2 ] & ( 1 << s2 ) ) {
 								startArray[ sid ] = seqAcctime[ 0 ];seqAcctime[ 0 ] += endArray[ sid ];
 								endArray[ sid ] = seqAcctime[ 0 ];seqAcctime[ 0 ] += controller.options.sdt;
 								plArray[ sid ] = 1;
@@ -6922,7 +6890,7 @@ var getPreview = ( function() {
 						}
 					}
 					if ( controller.options.seq ) {
-						for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+						for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 							if ( endArray[ sid ] === 0 || programArray[ sid ] === 0 ) {
 								continue;
 							}
@@ -6931,7 +6899,7 @@ var getPreview = ( function() {
 							busy = 1;
 						}
 					} else {
-						for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+						for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 							if ( endArray[ sid ] === 0 || programArray[ sid ] === 0 ) {
 								continue;
 							}
@@ -6962,7 +6930,7 @@ var getPreview = ( function() {
 				simminutes++;
 
 				// Go through stations and remove jobs that have been done
-				for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+				for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 					sqi = qidArray[ sid ];
 					if ( sqi === 255 ) {
 						continue;
@@ -6993,8 +6961,10 @@ var getPreview = ( function() {
 				for ( qid = 0; qid < rtQueue.length; qid++ ) {
 					q = rtQueue[ qid ];
 					sid = q.sid;
+					bid2 = sid >> 3;
+					s2 = sid & 0x07;
 					var sst = q.st + q.dur;
-					if ( controller.stations.stn_seq[ sid ] ) {
+					if ( controller.stations.stn_seq[ bid2 ] & ( 1 << s2 ) ) {
 						if ( sst > lastSeqStopTime[ q.gid ] ) {
 							lastSeqStopTime[ q.gid ] = sst;
 						}
@@ -7007,7 +6977,7 @@ var getPreview = ( function() {
 					if ( is211 ) {
 						lastSeqStopTime[ 0 ] = runSched( simminutes * 60, startArray, programArray, endArray, plArray, simt );
 						simminutes++;
-						for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+						for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 							if ( programArray[ sid ] > 0 && simminutes * 60 >= endArray[ sid ] ) {
 								startArray[ sid ] = -1;programArray[ sid ] = 0;endArray[ sid ] = 0;plArray[ sid ] = 0;
 							}
@@ -7015,7 +6985,7 @@ var getPreview = ( function() {
 					} else if ( is21 ) {
 						lastStopTime = runSched( simminutes * 60, startArray, programArray, endArray, plArray, simt );
 						simminutes++;
-						for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+						for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 							startArray[ sid ] = -1;programArray[ sid ] = 0;endArray[ sid ] = 0;
 						}
 					} else {
@@ -7025,14 +6995,14 @@ var getPreview = ( function() {
 						} else {
 							simminutes++;
 						}
-						for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+						for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 							startArray[ sid ] = -1;programArray[ sid ] = 0;endArray[ sid ] = 0;
 						}
 					}
 				} else {
 					simminutes++;
 					if ( is211 ) {
-					  for ( sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+					  for ( sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 						  if ( programArray[ sid ] > 0 && simminutes * 60 >= endArray[ sid ] ) {
 							  startArray[ sid ] = -1;programArray[ sid ] = 0;endArray[ sid ] = 0;plArray[ sid ] = 0;
 						  }
@@ -7044,7 +7014,7 @@ var getPreview = ( function() {
 	};
 
 	runSched216 = function( simseconds, rtQueue, qidArray, simt ) {
-		for ( var sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+		for ( var sid = 0; sid < controller.stations.snames.length; sid++ ) {
 			var sqi = qidArray[ sid ];
 			if ( sqi === 255 ) {
 				continue;
@@ -7054,8 +7024,8 @@ var getPreview = ( function() {
 
 				// If this one hasn't been plotted
 				var mas2 = typeof controller.options.mas2 !== "undefined" ? true : false,
-					useMas1 = controller.stations.masop[ sid ],
-					useMas2 = mas2 ? controller.stations.masop2[ sid ] : false;
+					useMas1 = controller.stations.masop[ sid >> 3 ] & ( 1 << ( sid % 8 ) ),
+					useMas2 = mas2 ? controller.stations.masop2[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) : false;
 
 				if ( !isStationMaster( sid ) ) {
 					if ( controller.options.mas > 0 && useMas1 ) {
@@ -7090,13 +7060,13 @@ var getPreview = ( function() {
 
 	runSched = function( simseconds, startArray, programArray, endArray, plArray, simt ) {
 		var endtime = simseconds;
-		for ( var sid = 0; sid < controller.settings.nbrd ; sid++ ) {
+		for ( var sid = 0; sid < controller.stations.snames.length ; sid++ ) {
 			if ( programArray[ sid ] ) {
 			  if ( is211 ) {
 				if ( plArray[ sid ] ) {
 					var mas2 = typeof controller.options.mas2 !== "undefined" ? true : false,
-						useMas1 = controller.stations.masop[ sid ],
-						useMas2 = mas2 ? controller.stations.masop2[ sid ] : false;
+						useMas1 = controller.stations.masop[ sid >> 3 ] & ( 1 << ( sid % 8 ) ),
+						useMas2 = mas2 ? controller.stations.masop2[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) : false;
 
 					if ( !isStationMaster( sid ) ) {
 						if ( controller.options.mas > 0 && useMas1 ) {
@@ -7126,13 +7096,13 @@ var getPreview = ( function() {
 
 					timeToText( sid, startArray[ sid ], programArray[ sid ], endArray[ sid ], simt );
 					plArray[ sid ] = 0;
-					if ( controller.stations.stn_seq[ sid ] ) {
+					if ( controller.stations.stn_seq[ sid >> 3 ] & ( 1 << ( sid & 0x07 ) ) ) {
 					  endtime = ( endtime > endArray[ sid ] ) ? endtime : endArray[ sid ];
 					}
 				}
 			  } else {
 				if ( controller.options.seq === 1 ) {
-					if ( isStationMaster( sid ) && ( controller.stations.masop[ sid ] ) ) {
+					if ( isStationMaster( sid ) && ( controller.stations.masop[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) ) {
 						previewData.push( {
 							"start": ( startArray[ sid ] + controller.options.mton ),
 							"end": ( endArray[ sid ] + controller.options.mtof ),
@@ -7147,7 +7117,7 @@ var getPreview = ( function() {
 					endtime = endArray[ sid ];
 				} else {
 					timeToText( sid, simseconds, programArray[ sid ], endArray[ sid ], simt );
-					if ( isStationMaster( sid ) && ( controller.stations.masop[ sid ] ) ) {
+					if ( isStationMaster( sid ) && ( controller.stations.masop[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) ) {
 						endtime = ( endtime > endArray[ sid ] ) ? endtime : endArray[ sid ];
 					}
 				}
@@ -7178,7 +7148,7 @@ var getPreview = ( function() {
 			( simt + start + ( controller.options.tz - 48 ) * 900 <= controller.settings.rdst * 1000 ) ||
 			controller.options.urs === 1 && controller.settings.rs === 1 ) &&
 			( typeof controller.stations.ignore_rain === "object" &&
-				( controller.stations.ignore_rain[ parseInt( sid ) ] ) === 0 ) ) {
+				( controller.stations.ignore_rain[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) === 0 ) ) {
 
 			className = "delayed";
 		}
