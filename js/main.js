@@ -119,7 +119,7 @@ var isIEMobile = /IEMobile/.test( navigator.userAgent ),
 	// Define the mapping between options and JSON keys
 	keyIndex = {
 		"tz":1, "ntp":2, "dhcp":3, "ip1":4, "ip2":5, "ip3":6, "ip4":7, "gw1":8, "gw2":9, "gw3":10, "gw4":11,
-		"hp0":12, "hp1":13, "ar":14, "ext":15, "seq":16, "sdt":17, "mas":18, "mton":19, "mtof":20, "urs":21, "rso":22,
+		"hp0":12, "hp1":13, "ar":14, "nstn":15, "seq":16, "sdt":17, "mas":18, "mton":19, "mtof":20, "urs":21, "rso":22,
 		"wl":23, "den":24, "ipas":25, "devid":26, "con":27, "lit":28, "dim":29, "bst":30, "uwt":31, "ntp1":32, "ntp2":33,
 		"ntp3":34, "ntp4":35, "lg":36, "mas2":37, "mton2":38, "mtof2":39, "fpr0":41, "fpr1":42, "re":43, "dns1": 44,
 		"dns2":45, "dns3":46, "dns4":47, "sar":48, "ife":49, "sn1t":50, "sn1o":51, "sn2t":52, "sn2o":53, "sn1on":54,
@@ -129,7 +129,7 @@ var isIEMobile = /IEMobile/.test( navigator.userAgent ),
 	// Array to hold all notifications currently displayed within the app
 	notifications = [],
 	timers = {},
-	curr183, currIp, currPrefix, currAuth, currPass, currAuthUser,
+	currIp, currPrefix, currAuth, currPass, currAuthUser,
 	currAuthPass, currLocal, currLang, language, deviceip, errorTimeout, weather, openPanel;
 
 // Prevent errors from bubbling up on Windows
@@ -694,13 +694,6 @@ function sendToOS( dest, type ) {
 		} );
 	}
 
-	if ( curr183 ) {
-
-		// Firmware 1.8.3 has a bug handling the time stamp in the GET request
-		$.extend( obj, {
-			cache: "true"
-		} );
-	}
 
 	defer = $.ajaxq( queue, obj ).then(
 		function( data ) {
@@ -934,267 +927,114 @@ function updateController( callback, fail ) {
 		callback();
 	};
 
-	if ( isControllerConnected() && checkOSVersion( 216 ) ) {
-		sendToOS( "/ja?pw=", "json" ).then( function( data ) {
-
-			if ( typeof data === "undefined" || $.isEmptyObject( data ) ) {
-				fail();
-				return;
-			}
-
-			// The /ja call does not contain special station data, so let's cache it
-			var special = controller.special;
-
-			controller = data;
-
-			// Restore the station cache to the object
-			controller.special = special;
-
-			// Fix the station status array
-			controller.status = controller.status.sn;
-
-			finish();
-		}, fail );
-	} else {
-		$.when(
-			updateControllerPrograms(),
-			updateControllerStations(),
-			updateControllerOptions(),
-			updateControllerStatus(),
-			updateControllerSettings()
-		).then( finish, fail );
-	}
+	$.when(
+		updateControllerPrograms(),
+		updateControllerStations(),
+		updateControllerOptions(),
+		updateControllerStatus(),
+		updateControllerSettings()
+	).then( finish, fail );
 }
 
 function updateControllerPrograms( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/gp?d=0" ).done( function( programs ) {
-			var vars = programs.match( /(nprogs|nstations|mnp)=[\w|\d|.\"]+/g ),
-				progs = /pd=\[\];(.*);/.exec( programs ),
-				newdata = {}, tmp, prog;
-
-			for ( var i = 0; i < vars.length; i++ ) {
-				if ( vars[ i ] === "" ) {
-					continue;
-				}
-				tmp = vars[ i ].split( "=" );
-				newdata[ tmp[ 0 ] ] = parseInt( tmp[ 1 ] );
-			}
-
-			newdata.pd = [];
-			if ( progs !== null ) {
-				progs = progs[ 1 ].split( ";" );
-				for ( i = 0; i < progs.length; i++ ) {
-					prog = progs[ i ].split( "=" );
-					prog = prog[ 1 ].replace( "[", "" );
-					prog = prog.replace( "]", "" );
-					newdata.pd[ i ] = parseIntArray( prog.split( "," ) );
-				}
-			}
-
-			controller.programs = newdata;
-			callback();
-		} );
-	} else {
-		return sendToOS( "/jp?pw=", "json" ).done( function( programs ) {
-			controller.programs = programs;
-			callback();
-		} );
-	}
+	return sendToOS( "/jp?pw=", "json" ).done( function( programs ) {
+		controller.programs = programs;
+		callback();
+	} );
 }
 
 function updateControllerStations( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/vs" ).done( function( stations ) {
-			var names = /snames=\[(.*?)\];/.exec( stations ),
-				masop = stations.match( /(?:masop|mo)\s?[=|:]\s?\[(.*?)\]/ );
-
-			names = names[ 1 ].split( "," );
-			names.pop();
-
-			for ( var i = 0; i < names.length; i++ ) {
-				names[ i ] = names[ i ].replace( /'/g, "" );
-			}
-
-			masop = parseIntArray( masop[ 1 ].split( "," ) );
-
-			controller.stations = {
-				"snames": names,
-				"masop": masop,
-				"maxlen": names.length
-			};
-			callback();
-		} );
-	} else {
-		return sendToOS( "/jn?pw=", "json" ).done( function( stations ) {
-			controller.stations = stations;
-			callback();
-		} );
-	}
+	return sendToOS( "/jn?pw=", "json" ).done( function( stations ) {
+		controller.stations = stations;
+		callback();
+	} );
 }
 
 function updateControllerOptions( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/vo" ).done( function( options ) {
-			var isOSPi = options.match( /var sd\s*=/ ),
-				vars = {}, tmp, i, o;
-
-			if ( isOSPi ) {
-				var varsRegex = /(tz|htp|htp2|nbrd|seq|sdt|mas|mton|mtoff|urs|rst|wl|ipas)\s?[=|:]\s?([\w|\d|.\"]+)/gm,
-					name;
-
-				while ( ( tmp = varsRegex.exec( options ) ) !== null ) {
-					name = tmp[ 1 ].replace( "nbrd", "ext" ).replace( "mtoff", "mtof" );
-					vars[ name ] = +tmp[ 2 ];
-				}
-				vars.ext--;
-				vars.fwv = "1.8.3-ospi";
-			} else {
-				var valid = [ 1, 2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26 ];
-				tmp = /var opts=\[(.*)\];/.exec( options );
-				tmp = tmp[ 1 ].replace( /"/g, "" ).split( "," );
-
-				for ( i = 0; i < tmp.length - 1; i = i + 4 ) {
-					o = +tmp[ i + 3 ];
-					if ( $.inArray( o, valid ) !== -1 ) {
-						vars[ keyIndex[ o ] ] = +tmp[ i + 2 ];
-					}
-				}
-				vars.fwv = 183;
-			}
-			controller.options = vars;
-			callback();
-		} );
-	} else {
-		return sendToOS( "/jo?pw=", "json" ).done( function( options ) {
-			controller.options = options;
-			callback();
-		} );
-	}
+	return sendToOS( "/jo?pw=", "json" ).done( function( options ) {
+		controller.options = options;
+		callback();
+	} );
 }
 
 function updateControllerStatus( callback ) {
 	callback = callback || function() {};
+	return sendToOS( "/js?pw=", "json" ).then(
+		function( status ) {
+			controller.status_sn = status.sn;
+			controller.status = function(i){
+				let m = 1<<(i&0x07);
+				i >>= 3;
+				if (i >= controller.status_sn.length)
+					return 0;
+				return controller.status_sn[i] & m;
+			};
 
-	if ( curr183 === true ) {
+			controller.set_status = function(i, v){
+				let m = 1<<(i&0x07);
+				i >>= 3;
+				if (i >= controller.status_sn.length)
+					return;
+				if (v)
+					controller.status_sn[i] &= ~m;
+				else
+					controller.status_sn[i] |= m;
+			};
 
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/sn0" ).then(
-			function( status ) {
-				var tmp = status.toString().match( /\d+/ );
-
-				tmp = parseIntArray( tmp[ 0 ].split( "" ) );
-
-				controller.status = tmp;
-				callback();
-			},
-			function() {
-				controller.status = [];
-			} );
-	} else {
-		return sendToOS( "/js?pw=", "json" ).then(
-			function( status ) {
-				controller.status = status.sn;
-				callback();
-			},
-			function() {
-				controller.status = [];
-			} );
-	}
+			callback();
+		},
+		function() {
+			controller.status_sn = [];
+			controller.status = function(i){ return 0;}
+			controller.set_status = function(i, v){}
+		} );
 }
 
 function updateControllerSettings( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "" ).then(
-			function( settings ) {
-				var varsRegex = /(ver|devt|nbrd|tz|en|rd|rs|mm|rdst|urs)\s?[=|:]\s?([\w|\d|.\"]+)/gm,
-					loc = settings.match( /loc\s?[=|:]\s?[\"|'](.*)[\"|']/ ),
-					lrun = settings.match( /lrun=\[(.*)\]/ ),
-					ps = settings.match( /ps=\[(.*)\];/ ),
-					vars = {}, tmp, i;
-
-				ps = ps[ 1 ].split( "],[" );
-				for ( i = ps.length - 1; i >= 0; i-- ) {
-					ps[ i ] = parseIntArray( ps[ i ].replace( /\[|\]/g, "" ).split( "," ) );
-				}
-
-				while ( ( tmp = varsRegex.exec( settings ) ) !== null ) {
-					vars[ tmp[ 1 ] ] = +tmp[ 2 ];
-				}
-
-				vars.loc = loc[ 1 ];
-				vars.ps = ps;
-				vars.lrun = parseIntArray( lrun[ 1 ].split( "," ) );
-
-				controller.settings = vars;
-			},
-			function() {
-				if ( controller.settings && controller.stations ) {
-					var ps = [], i;
-					for ( i = 0; i < controller.stations.maxlen; i++ ) {
-						ps.push( [ 0, 0 ] );
-					}
-					controller.settings.ps = ps;
-				}
-			} );
-	} else {
-		return sendToOS( "/jc?pw=" ).then(
-			function( settings ) {
-				if ( typeof settings !== "object" ) {
+	return sendToOS( "/jc?pw=" ).then(
+		function( settings ) {
+			if ( typeof settings !== "object" ) {
+				try {
+					settings = JSON.parse( settings );
+				} catch ( err ) {
+					var matchWTO = /,"wto":\{.*?\}/;
+					var wto = settings.match( matchWTO );
+					settings = settings.replace( matchWTO, "" );
 					try {
 						settings = JSON.parse( settings );
-					} catch ( err ) {
-						var matchWTO = /,"wto":\{.*?\}/;
-						var wto = settings.match( matchWTO );
-						settings = settings.replace( matchWTO, "" );
-						try {
-							settings = JSON.parse( settings );
-							handleCorruptedWeatherOptions( wto );
-						} catch ( e ) {
-							return false;
-						}
+						handleCorruptedWeatherOptions( wto );
+					} catch ( e ) {
+						return false;
 					}
 				}
+			}
 
-				if ( typeof settings.lrun === "undefined" ) {
-					settings.lrun = [ 0, 0, 0, 0 ];
-				}
+			if ( typeof settings.lrun === "undefined" ) {
+				settings.lrun = [ 0, 0, 0, 0 ];
+			}
 
-				// Update the current coordinates if the user's location is using them
-				if ( settings.loc.match( regex.gps ) ) {
-					var location = settings.loc.split( "," );
-					currentCoordinates = [ parseFloat( location[ 0 ] ), parseFloat( location[ 1 ] ) ];
-				}
+			// Update the current coordinates if the user's location is using them
+			if ( settings.loc.match( regex.gps ) ) {
+				var location = settings.loc.split( "," );
+				currentCoordinates = [ parseFloat( location[ 0 ] ), parseFloat( location[ 1 ] ) ];
+			}
 
-				controller.settings = settings;
-				callback();
-			},
-			function() {
-				if ( controller.settings && controller.stations ) {
-					var ps = [], i;
-					for ( i = 0; i < controller.stations.maxlen; i++ ) {
-						ps.push( [ 0, 0 ] );
-					}
-					controller.settings.ps = ps;
+			controller.settings = settings;
+			callback();
+		},
+		function() {
+			if ( controller.settings && controller.stations ) {
+				var ps = [], i;
+				for ( i = 0; i < controller.stations.maxlen; i++ ) {
+					ps.push( [ 0, 0 ] );
 				}
-			} );
-	}
+				controller.settings.ps = ps;
+			}
+		} );
 }
 
 function updateControllerStationSpecial( callback ) {
@@ -1265,12 +1105,6 @@ function checkConfigured( firstLoad ) {
 			currAuth = false;
 		}
 
-		if ( sites[ current ].is183 ) {
-			curr183 = true;
-		} else {
-			curr183 = false;
-		}
-
 		newLoad();
 	} );
 }
@@ -1307,13 +1141,8 @@ function submitNewUser( ssl, useAuth ) {
 	var ip = $.mobile.path.parseUrl( $( "#os_ip" ).val() ).hrefNoHash.replace( /https?:\/\//, "" ),
 		success = function( data, sites ) {
 			$.mobile.loading( "hide" );
-			var is183;
 
-			if ( ( typeof data === "string" && data.match( /var (en|sd)\s*=/ ) ) || ( typeof data.fwv === "number" && data.fwv === 203 ) ) {
-				is183 = true;
-			}
-
-			if ( data.fwv !== undefined || is183 === true ) {
+			if ( data.fwv !== undefined) {
 				var name = $( "#os_name" ).val(),
 					pw = $( "#os_pw" ).val(),
 					savePW = $( "#save_pw" ).is( ":checked" );
@@ -1349,11 +1178,6 @@ function submitNewUser( ssl, useAuth ) {
 					currAuthPass = sites[ name ].auth_pw;
 				} else {
 					currAuth = false;
-				}
-
-				if ( is183 === true ) {
-					sites[ name ].is183 = "1";
-					curr183 = true;
 				}
 
 				$( "#os_name,#os_ip,#os_pw,#os_auth_user,#os_auth_pw" ).val( "" );
@@ -2803,7 +2627,7 @@ function checkURLandUpdateWeather() {
 		updateWeather();
 	};
 
-	if ( controller.settings && controller.settings.wsp ) {
+	if ( controller.settings.wsp ) {
 		if ( controller.settings.wsp === "weather.opensprinkler.com" ) {
 			finish();
 			return;
@@ -3686,6 +3510,7 @@ function showOptions( expandItem ) {
 						break;
 					case "o18":
 					case "o37":
+						// #o15 - number of stations/boards
 						if ( parseInt( data ) > ( parseInt( page.find( "#o15" ).val() ) + 1 )  ) {
 							data = 0;
 						}
@@ -3900,7 +3725,7 @@ function showOptions( expandItem ) {
 		( typeof expandItem === "string" && expandItem === "station" ? " data-collapsed='false'" : "" ) + "><legend>" +
 		_( "Station Handling" ) + "</legend>";
 
-	if ( typeof controller.options.ext !== "undefined" ) {
+	if ( typeof controller.options.nstn !== "undefined" ) {
 
 		list += "<div class='ui-field-contain'><label for='o15' class='select'>" +
 			_( "Number of Stations" ) +
@@ -3908,8 +3733,8 @@ function showOptions( expandItem ) {
 				( controller.options.dexp + 8 ) + " " + _( "available" ) + ")</span>" : "" ) +
 			"</label><select data-mini='true' id='o15'>";
 
-		for ( i = 0; i <= ( controller.options.mexp || 5 ); i++ ) {
-			list += "<option " + ( ( controller.options.ext === i ) ? "selected" : "" ) + " value='" + i + "'>" + ( i + 1 ) + " " + _( "stations" ) +
+		for ( i = 0; i <= ( controller.options.mstn || 5 ); i++ ) {
+			list += "<option " + ( ( controller.options.nstn === i ) ? "selected" : "" ) + " value='" + i + "'>" + ( i + 1 ) + " " + _( "stations" ) +
 				"</option>";
 		}
 		list += "</select></div>";
@@ -4375,43 +4200,43 @@ function showOptions( expandItem ) {
 		}
 
 		if ( controller.options.mas ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "m" + i + "=255&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_rain === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "i" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_sn1 === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "j" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_sn2 === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "k" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.act_relay === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "a" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.stn_dis === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "d" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.stn_seq === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "q" + i + "=255&";
 			}
 		}
@@ -4936,12 +4761,12 @@ var showHome = ( function() {
 		addCard = function( i ) {
 			var station = controller.stations.snames[ i ],
 				isScheduled = controller.settings.ps[ i ][ 0 ] > 0,
-				isRunning = controller.status[ i ] > 0,
+				isRunning = controller.status(i) > 0,
 				pname = isScheduled ? pidname( controller.settings.ps[ i ][ 0 ] ) : "",
 				rem = controller.settings.ps[ i ][ 1 ],
 				hasImage = sites[ currentSite ].images[ i ] ? true : false;
 
-			if ( controller.status[ i ] && rem > 0 ) {
+			if ( controller.status(i) && rem > 0 ) {
 				addTimer( i, rem );
 			}
 
@@ -4961,18 +4786,18 @@ var showHome = ( function() {
 			cards += "<span class='btn-no-border ui-btn ui-btn-icon-notext ui-icon-wifi card-icon special-station " +
 				( isStationSpecial( i ) ? "" : "hidden" ) + "'></span>";
 
-			cards += "<span class='btn-no-border ui-btn " + ( ( isStationMaster( i ) ) ? "ui-icon-master" : "ui-icon-gear" ) +
+				cards += "<span class='btn-no-border ui-btn " + ( ( isStationMaster( i ) ) ? "ui-icon-master" : "ui-icon-gear" ) +
 				" card-icon ui-btn-icon-notext station-settings' data-station='" + i + "' id='attrib-" + i + "' " +
-				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
 				( hasGroup ? ( "data-grp='"     + controller.stations.stn_grp        [ i ] + "' " ) : "" ) +
-				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
 				"></span>";
 
 			if ( !isStationMaster( i ) ) {
@@ -5402,9 +5227,9 @@ var showHome = ( function() {
 				names = {},
 				attrib, b, sid, s;
 
-			for ( sid = 0; sid < controller.stations.snames.length; sid++ ) {
+			for ( sid = 0; sid < controller.settings.nstn; sid++ ) {
 				attrib = page.find( "#attrib-" + sid );
-				b = sid / 8;
+				b = sid >> 3;
 				s = sid % 8;
 				if ( hasMaster ) {
 					if (master[ "m" + b ] === undefined)  master[ "m" + b ] = 0;
@@ -5446,14 +5271,15 @@ var showHome = ( function() {
 					group[ "g" + sid ] = attrib.data( "grp" );
 				}
 			}
-				// Only send the name of the station being updated
-				names[ "s" + id ] = page.find( "#station_" + id ).text();
 
-				if ( hasSpecial && attrib.data( "hs" ) ) {
-					special.st = attrib.data( "hs" );
-					special.sd = attrib.data( "specialData" );
-					special.sid = id;
-				}
+			// Only send the name of the station being updated
+			names[ "s" + id ] = page.find( "#station_" + id ).text().replace( /\s/g, "_" );;
+			attrib = page.find( "#attrib-" + id );
+			if ( hasSpecial && attrib.data( "hs" ) ) {
+				special.st = attrib.data( "hs" );
+				special.sd = attrib.data( "specialData" );
+				special.sid = id;
+			}
 
 
 			$.mobile.loading( "show" );
@@ -5565,7 +5391,7 @@ var showHome = ( function() {
 
 			for ( var i = 0; i < controller.stations.snames.length; i++ ) {
 				isScheduled = controller.settings.ps[ i ][ 0 ] > 0;
-				isRunning = controller.status[ i ] > 0;
+				isRunning = controller.status(i) > 0;
 				pname = isScheduled ? pidname( controller.settings.ps[ i ][ 0 ] ) : "";
 				rem = controller.settings.ps[ i ][ 1 ],
 				hasImage = sites[ currentSite ].images[ i ] ? true : false;
@@ -5601,16 +5427,16 @@ var showHome = ( function() {
 						card.find( ".station-settings" ).removeClass( "ui-icon-master" ).addClass( "ui-icon-gear" );
 					}
 					card.find( ".station-settings" ).data( {
-						um: hasMaster ?     ( ( controller.stations.masop      [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						um2: hasMaster2 ?   ( ( controller.stations.masop2     [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						ir: hasIR ?         ( ( controller.stations.ignore_rain[ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						sn1: hasSN1 ?       ( ( controller.stations.ignore_sn1 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						sn2: hasSN2 ?       ( ( controller.stations.ignore_sn2 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						ar: hasAR ?         ( ( controller.stations.act_relay  [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						sd: hasSD ?         ( ( controller.stations.stn_dis    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						us: hasSequential ? ( ( controller.stations.stn_seq    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						um: hasMaster ?     ( ( controller.stations.masop      [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						um2: hasMaster2 ?   ( ( controller.stations.masop2     [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						ir: hasIR ?         ( ( controller.stations.ignore_rain[ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sn1: hasSN1 ?       ( ( controller.stations.ignore_sn1 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sn2: hasSN2 ?       ( ( controller.stations.ignore_sn2 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						ar: hasAR ?         ( ( controller.stations.act_relay  [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sd: hasSD ?         ( ( controller.stations.stn_dis    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						us: hasSequential ? ( ( controller.stations.stn_seq    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
 						grp: hasGroup ? controller.stations.stn_grp[ i ] : undefined,
-						hs: hasSpecial ?    ( ( controller.stations.stn_spe    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined
+						hs: hasSpecial ?    ( ( controller.stations.stn_spe    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined
 					} );
 
 					if ( !isStationMaster( i ) && ( isScheduled || isRunning ) ) {
@@ -5620,7 +5446,7 @@ var showHome = ( function() {
 
 							// Show the remaining time if it's greater than 0
 							line += " <span id='countdown-" + i + "' class='nobr'>(" + sec2hms( rem ) + " " + _( "remaining" ) + ")</span>";
-							if ( controller.status[ i ] ) {
+							if ( controller.status(i) ) {
 								addTimer( i, rem );
 							}
 						}
@@ -5716,7 +5542,7 @@ var showHome = ( function() {
 
 			var el = $( this ),
 				station = el.data( "station" ),
-				currentStatus = controller.status[ station ],
+				currentStatus = controller.status(station),
 				name = controller.stations.snames[ station ],
 				question;
 
@@ -5761,7 +5587,7 @@ var showHome = ( function() {
 					// Update local state until next device refresh occurs
 					controller.settings.ps[ station ][ 0 ] = 0;
 					controller.settings.ps[ station ][ 1 ] = 0;
-					controller.status[ i ] = 0;
+					controller.set_status(i, 0);
 
 					// Remove any timer associated with the station
 					delete timers[ "station-" + station ];
@@ -5942,16 +5768,16 @@ function isStationMaster( sid ) {
 }
 
 function isStationDisabled( sid ) {
-	return ( typeof controller.stations.stn_dis === "object" && ( controller.stations.stn_dis[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0 );
+	return ( typeof controller.stations.stn_dis === "object" && ( controller.stations.stn_dis[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) > 0 );
 }
 
 function isStationSpecial( sid ) {
-	return ( typeof controller.stations.stn_spe === "object" && ( controller.stations.stn_spe[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0 );
+	return ( typeof controller.stations.stn_spe === "object" && ( controller.stations.stn_spe[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) > 0 );
 }
 
 function isStationSequential( sid ) {
 	if ( typeof controller.stations.stn_seq === "object" ) {
-		return ( controller.stations.stn_seq[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0;
+		return ( controller.stations.stn_seq[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) > 0;
 	} else {
 		return controller.options.seq;
 	}
@@ -6129,9 +5955,9 @@ function checkStatus() {
 
 	// Handle open stations
 	open = {};
-	for ( i = 0; i < controller.status.length; i++ ) {
-		if ( controller.status[ i ] && !isStationMaster( i ) ) {
-			open[ i ] = controller.status[ i ];
+	for ( i = 0; i < controller.status_sn.length; i++ ) {
+		if ( controller.status(i) && !isStationMaster( i ) ) {
+			open[ i ] = controller.status(i);
 		}
 	}
 
@@ -6165,7 +5991,7 @@ function checkStatus() {
 	// Handle a single station open
 	match = false;
 	for ( i = 0; i < controller.stations.snames.length; i++ ) {
-		if ( controller.settings.ps[ i ] && controller.settings.ps[ i ][ 0 ] && controller.status[ i ] && !isStationMaster( i ) ) {
+		if ( controller.settings.ps[ i ] && controller.settings.ps[ i ][ 0 ] && controller.status(i) && !isStationMaster( i ) ) {
 			match = true;
 			pid = controller.settings.ps[ i ][ 0 ];
 			pname = pidname( pid );
@@ -6354,7 +6180,7 @@ var getManual = ( function() {
 				var item = listitems.eq( currPos ).find( "a" );
 
 				if ( controller.options.mas ) {
-					if ( controller.status[ controller.options.mas - 1 ] ) {
+					if ( controller.status(controller.options.mas - 1) ) {
 						listitems.eq( controller.options.mas - 1 ).addClass( "green" );
 					} else {
 						listitems.eq( controller.options.mas - 1 ).removeClass( "green" );
@@ -6363,7 +6189,7 @@ var getManual = ( function() {
 
 				item.text( controller.stations.snames[ currPos ] );
 
-				if ( controller.status[ currPos ] ) {
+				if ( controller.status(currPos) ) {
 					item.removeClass( "yellow" ).addClass( "green" );
 				} else {
 					item.removeClass( "green yellow" );
@@ -6386,7 +6212,7 @@ var getManual = ( function() {
 				return false;
 			}
 
-			if ( controller.status[ currPos ] ) {
+			if ( controller.status(currPos) ) {
 				if ( checkOSPiVersion( "2.1" ) ) {
 					dest = "/sn?sid=" + sid + "&set_to=0&pw=";
 				} else {
@@ -6455,10 +6281,10 @@ var getManual = ( function() {
 
 		$.each( controller.stations.snames, function( i, station ) {
 			if ( isStationMaster( i ) ) {
-				list += "<li data-icon='false' class='center" + ( ( controller.status[ i ] ) ? " green" : "" ) +
+				list += "<li data-icon='false' class='center" + ( ( controller.status(i) ) ? " green" : "" ) +
 					( isStationDisabled( i ) ? " station-hidden' style='display:none" : "" ) + "'>" + station + " (" + _( "Master" ) + ")</li>";
 			} else {
-				list += "<li data-icon='false'><a class='mm_station center" + ( ( controller.status[ i ] ) ? " green" : "" ) +
+				list += "<li data-icon='false'><a class='mm_station center" + ( ( controller.status(i) ) ? " green" : "" ) +
 					( isStationDisabled( i ) ? " station-hidden' style='display:none" : "" ) + "'>" + station + "</a></li>";
 			}
 		} );
@@ -7148,7 +6974,7 @@ var getPreview = ( function() {
 			( simt + start + ( controller.options.tz - 48 ) * 900 <= controller.settings.rdst * 1000 ) ||
 			controller.options.urs === 1 && controller.settings.rs === 1 ) &&
 			( typeof controller.stations.ignore_rain === "object" &&
-				( controller.stations.ignore_rain[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) === 0 ) ) {
+				( controller.stations.ignore_rain[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) === 0 ) ) {
 
 			className = "delayed";
 		}
@@ -8120,7 +7946,7 @@ function resetAllOptions( callback ) {
 		var co;
 
 		if ( isOSPi() ) {
-			co = "otz=32&ontp=1&onbrd=0&osdt=0&omas=0&omton=0&omtoff=0&orst=1&owl=100&orlp=0&ouwt=0&olg=1&oloc=Boston,MA";
+			co = "otz=32&ontp=1&onstn=0&osdt=0&omas=0&omton=0&omtoff=0&orst=1&owl=100&orlp=0&ouwt=0&olg=1&oloc=Boston,MA";
 		} else {
 			co = "o1=32&o2=1&o3=1&o12=80&o13=0&o15=0&o17=0&o18=0&o19=0&o20=0&o22=1&o23=100&o26=0&o27=110&o28=100&o29=15&" +
 				"o30=0&o31=0&o32=50&o33=97&o34=210&o35=169&o36=1&o37=0&o38=0&o39=0&loc=Boston,MA&wto=%22key%22%3A%22%22";
@@ -9389,7 +9215,7 @@ function importConfig( data ) {
 			}
 		} else if ( !isPi && typeof data.options.fwv === "number" && data.options.fwv < 211 && !checkOSVersion( 211 ) ) {
 			var bid;
-			for ( bid = 0; bid < data.settings.nbrd; bid++ ) {
+			for ( bid = 0; bid < data.settings.nstn; bid++ ) {
 				cs += "&q" + bid + "=" + ( data.options.seq === 1 ? 255 : 0 );
 			}
 		}
@@ -9589,8 +9415,8 @@ var showAbout = ( function() {
 
 // OpenSprinkler controller methods
 function isRunning() {
-	for ( var i = 0; i < controller.status.length; i++ ) {
-		if ( controller.status[ i ] > 0 && controller.settings.ps[ i ][ 0 ] > 0 ) {
+	for ( var i = 0; i < controller.status_sn.length; i++ ) {
+		if ( controller.status(i) > 0 && controller.settings.ps[ i ][ 0 ] > 0 ) {
 			return i;
 		}
 	}
@@ -11911,8 +11737,8 @@ function getDurationText( time ) {
 // Convert seconds into (HH:)MM:SS format. HH is only reported if greater than 0.
 function sec2hms( diff ) {
 	var str = "";
-	var hours = Math.max( 0, parseInt( diff / 3600 ) % 24 );
-	var minutes = Math.max( 0, parseInt( diff / 60 ) % 60 );
+	var hours = Math.max( 0, Math.floor( diff / 3600 ) % 24 );
+	var minutes = Math.max( 0, Math.floor( diff / 60 ) % 60 );
 	var seconds = diff % 60;
 	if ( hours ) {
 		str += pad( hours ) + ":";
@@ -11925,10 +11751,10 @@ function sec2dhms( diff ) {
 	var isNegative = ( diff < 0 ) ? -1 : 1;
 	diff = Math.abs( diff );
 	return {
-		"days": Math.max( 0, parseInt( diff / 86400 ) ) * isNegative,
-		"hours": Math.max( 0, parseInt( diff % 86400 / 3600 ) ) * isNegative,
-		"minutes": Math.max( 0, parseInt( ( diff % 86400 ) % 3600 / 60 ) ) * isNegative,
-		"seconds": Math.max( 0, parseInt( ( diff % 86400 ) % 3600 % 60 ) ) * isNegative
+		"days": Math.max( 0, Math.floor( diff / 86400 ) ) * isNegative,
+		"hours": Math.max( 0, Math.floor( diff % 86400 / 3600 ) ) * isNegative,
+		"minutes": Math.max( 0, Math.floor( ( diff % 86400 ) % 3600 / 60 ) ) * isNegative,
+		"seconds": Math.max( 0, Math.floor( ( diff % 86400 ) % 3600 % 60 ) ) * isNegative
 	};
 }
 
@@ -11963,9 +11789,8 @@ function isControllerConnected() {
 		$.isEmptyObject( controller.options ) ||
 		$.isEmptyObject( controller.programs ) ||
 		$.isEmptyObject( controller.settings ) ||
-		$.isEmptyObject( controller.status ) ||
+		$.isEmptyObject( controller.status_sn ) ||
 		$.isEmptyObject( controller.stations ) ) {
-
 			return false;
 	}
 

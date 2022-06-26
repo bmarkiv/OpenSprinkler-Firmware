@@ -735,14 +735,12 @@ void do_loop()
 					
 					// process all selected stations
 					for(sid=0;sid<os.nstations;sid++) {
-						bid=sid>>3;
-						s=sid&0x07;
 						// skip if the station is a master station (because master cannot be scheduled independently
 						if ((os.status.mas==sid+1) || (os.status.mas2==sid+1))
 							continue;
 
 						// if station has non-zero water time and the station is not disabled
-						if (prog.durations[sid] && !(os.stationAttributes.a.attrib_dis[sid])) {
+						if (prog.durations[sid] && !os.check_bit(os.stationAttributes.a.attrib_dis, sid)) {
 							// water time is scaled by watering percentage
 							ulong water_time = water_time_resolve(prog.durations[sid]);
 							// if the program is set to use weather scaling
@@ -812,8 +810,8 @@ void do_loop()
 				pd.station_qid[sid]=qid;
 			}
 			// next, go through the stations and perform time keeping
-			for(sid=0;bid<os.nstations; sid++) {
-				bitvalue = os.station_bits[sid];
+			for(sid=0; sid<os.nstations; sid++) {
+				bitvalue = os.check_bit(os.station_bits, sid);
 
 				// skip master station
 				if (os.status.mas == sid+1) continue;
@@ -864,7 +862,7 @@ void do_loop()
 				sst = q->st + q->dur;
 				if (sst>curr_time) {
 					// only need to update last_seq_stop_time for sequential stations
-					if (os.stationAttributes.a.attrib_seq[sid] && !re) {
+					if (os.check_bit(os.stationAttributes.a.attrib_seq, sid) && !re) {
 						pd.last_seq_stop_time = (sst>pd.last_seq_stop_time ) ? sst : pd.last_seq_stop_time;
 					}
 				}
@@ -902,7 +900,7 @@ void do_loop()
 				// skip if this is the master station
 				if (os.status.mas == sid+1) continue;
 				// if this station is running and is set to activate master
-				if ((os.station_bits[sid]) && (os.stationAttributes.a.attrib_mas[sid])) {
+				if (os.check_bit(os.station_bits, sid) && os.check_bit(os.stationAttributes.a.attrib_mas, sid)) {
 					q=pd.queue+pd.station_qid[sid];
 					// check if timing is within the acceptable range
 					if (curr_time >= q->st + mas_on_adj &&
@@ -923,7 +921,7 @@ void do_loop()
 				// skip if this is the master station
 				if (os.status.mas2 == sid+1) continue;
 				// if this station is running and is set to activate master
-				if (os.station_bits[sid] && (os.stationAttributes.a.attrib_mas2[sid])) {
+				if (os.check_bit(os.station_bits, sid) && os.check_bit(os.stationAttributes.a.attrib_mas2, sid)) {
 					q=pd.queue+pd.station_qid[sid];
 					// check if timing is within the acceptable range
 					if (curr_time >= q->st + mas_on_adj_2 &&
@@ -1162,12 +1160,13 @@ void process_dynamic_events(ulong curr_time) {
 		sn2 = true;
 
 	// todo: handle sensor 2
-	byte sid, qid, igs, igs2, igrd;
+	byte sid, s, a, qid, igs, igs2, igrd;
 	for(sid=0;sid<os.nstations;sid++) {
-		igs = os.stationAttributes.a.attrib_igs[sid];
-		igs2= os.stationAttributes.a.attrib_igs2[sid];
-		igrd= os.stationAttributes.a.attrib_igrd[sid];
-
+		a = sid / 8;
+		s = sid % 8;
+		igs = os.stationAttributes.a.attrib_igs[a];
+		igs2= os.stationAttributes.a.attrib_igs2[a];
+		igrd= os.stationAttributes.a.attrib_igrd[a];
 		// ignore master stations because they are handled separately			 
 		if (os.status.mas == sid+1) continue;
 		if (os.status.mas2== sid+1) continue;			 
@@ -1181,9 +1180,9 @@ void process_dynamic_events(ulong curr_time) {
 
 		if(q->pid>=99) continue;	// if this is a manually started program, proceed
 		if(!en)	turn_off_station(sid, curr_time);	// if system is disabled, turn off zone
-		if(rd && !igrd) turn_off_station(sid, curr_time);	// if rain delay is on and zone does not ignore rain delay, turn it off
-		if(sn1&& !igs ) turn_off_station(sid, curr_time);	// if sensor1 is on and zone does not ignore sensor1, turn it off
-		if(sn2&& !igs2) turn_off_station(sid, curr_time);	// if sensor2 is on and zone does not ignore sensor2, turn it off
+		if(rd && !(igrd&(1<<s))) turn_off_station(sid, curr_time);	// if rain delay is on and zone does not ignore rain delay, turn it off
+		if(sn1&& !(igs &(1<<s))) turn_off_station(sid, curr_time);	// if sensor1 is on and zone does not ignore sensor1, turn it off
+		if(sn2&& !(igs2&(1<<s))) turn_off_station(sid, curr_time);	// if sensor2 is on and zone does not ignore sensor2, turn it off
 	}
 }
 

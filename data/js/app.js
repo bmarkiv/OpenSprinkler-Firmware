@@ -75,303 +75,6 @@ Array.prototype.remove=function(t,h){var e=this.slice((h||t)+1||this.length);ret
 
 // Stanford Javascript Crypto Library (1.0.4)
 "use strict";function q(a){throw a;}var s=void 0,u=!1;var sjcl={cipher:{},hash:{},keyexchange:{},mode:{},misc:{},codec:{},exception:{corrupt:function(a){this.toString=function(){return"CORRUPT: "+this.message};this.message=a},invalid:function(a){this.toString=function(){return"INVALID: "+this.message};this.message=a},bug:function(a){this.toString=function(){return"BUG: "+this.message};this.message=a},notReady:function(a){this.toString=function(){return"NOT READY: "+this.message};this.message=a}}};"undefined"!==typeof module&&module.exports&&(module.exports=sjcl);"function"===typeof define&&define([],function(){return sjcl});sjcl.cipher.aes=function(a){this.l[0][0][0]||this.G();var b,c,d,e,g=this.l[0][4],f=this.l[1];b=a.length;var h=1;4!==b&&(6!==b&&8!==b)&&q(new sjcl.exception.invalid("invalid aes key size"));this.b=[d=a.slice(0),e=[]];for(a=b;a<4*b+28;a++){c=d[a-1];if(0===a%b||8===b&&4===a%b)c=g[c>>>24]<<24^g[c>>16&255]<<16^g[c>>8&255]<<8^g[c&255],0===a%b&&(c=c<<8^c>>>24^h<<24,h=h<<1^283*(h>>7));d[a]=d[a-b]^c}for(b=0;a;b++,a--)c=d[b&3?a:a-4],e[b]=4>=a||4>b?c:f[0][g[c>>>24]]^f[1][g[c>>16&255]]^f[2][g[c>>8&255]]^f[3][g[c&255]]};sjcl.cipher.aes.prototype={encrypt:function(a){return w(this,a,0)},decrypt:function(a){return w(this,a,1)},l:[[[],[],[],[],[]],[[],[],[],[],[]]],G:function(){var a=this.l[0],b=this.l[1],c=a[4],d=b[4],e,g,f,h=[],l=[],k,m,n,p;for(e=0;0x100>e;e++)l[(h[e]=e<<1^283*(e>>7))^e]=e;for(g=f=0;!c[g];g^=k||1,f=l[f]||1){n=f^f<<1^f<<2^f<<3^f<<4;n=n>>8^n&255^99;c[g]=n;d[n]=g;m=h[e=h[k=h[g]]];p=0x1010101*m^0x10001*e^0x101*k^0x1010100*g;m=0x101*h[n]^0x1010100*n;for(e=0;4>e;e++)a[e][g]=m=m<<24^m>>>8,b[e][n]=p=p<<24^p>>>8}for(e=0;5>e;e++)a[e]=a[e].slice(0),b[e]=b[e].slice(0)}};function w(a,b,c){4!==b.length&&q(new sjcl.exception.invalid("invalid aes block size"));var d=a.b[c],e=b[0]^d[0],g=b[c?3:1]^d[1],f=b[2]^d[2];b=b[c?1:3]^d[3];var h,l,k,m=d.length/4-2,n,p=4,t=[0,0,0,0];h=a.l[c];a=h[0];var r=h[1],v=h[2],y=h[3],z=h[4];for(n=0;n<m;n++)h=a[e>>>24]^r[g>>16&255]^v[f>>8&255]^y[b&255]^d[p],l=a[g>>>24]^r[f>>16&255]^v[b>>8&255]^y[e&255]^d[p+1],k=a[f>>>24]^r[b>>16&255]^v[e>>8&255]^y[g&255]^d[p+2],b=a[b>>>24]^r[e>>16&255]^v[g>>8&255]^y[f&255]^d[p+3],p+=4,e=h,g=l,f=k;for(n=0;4>n;n++)t[c?3&-n:n]=z[e>>>24]<<24^z[g>>16&255]<<16^z[f>>8&255]<<8^z[b&255]^d[p++],h=e,e=g,g=f,f=b,b=h;return t}sjcl.bitArray={bitSlice:function(a,b,c){a=sjcl.bitArray.R(a.slice(b/32),32-(b&31)).slice(1);return c===s?a:sjcl.bitArray.clamp(a,c-b)},extract:function(a,b,c){var d=Math.floor(-b-c&31);return((b+c-1^b)&-32?a[b/32|0]<<32-d^a[b/32+1|0]>>>d:a[b/32|0]>>>d)&(1<<c)-1},concat:function(a,b){if(0===a.length||0===b.length)return a.concat(b);var c=a[a.length-1],d=sjcl.bitArray.getPartial(c);return 32===d?a.concat(b):sjcl.bitArray.R(b,d,c|0,a.slice(0,a.length-1))},bitLength:function(a){var b=a.length;return 0===b?0:32*(b-1)+sjcl.bitArray.getPartial(a[b-1])},clamp:function(a,b){if(32*a.length<b)return a;a=a.slice(0,Math.ceil(b/32));var c=a.length;b&=31;0<c&&b&&(a[c-1]=sjcl.bitArray.partial(b,a[c-1]&2147483648>>b-1,1));return a},partial:function(a,b,c){return 32===a?b:(c?b|0:b<<32-a)+0x10000000000*a},getPartial:function(a){return Math.round(a/0x10000000000)||32},equal:function(a,b){if(sjcl.bitArray.bitLength(a)!==sjcl.bitArray.bitLength(b))return u;var c=0,d;for(d=0;d<a.length;d++)c|=a[d]^b[d];return 0===c},R:function(a,b,c,d){var e;e=0;for(d===s&&(d=[]);32<=b;b-=32)d.push(c),c=0;if(0===b)return d.concat(a);for(e=0;e<a.length;e++)d.push(c|a[e]>>>b),c=a[e]<<32-b;e=a.length?a[a.length-1]:0;a=sjcl.bitArray.getPartial(e);d.push(sjcl.bitArray.partial(b+a&31,32<b+a?c:d.pop(),1));return d},g:function(a,b){return[a[0]^b[0],a[1]^b[1],a[2]^b[2],a[3]^b[3]]},byteswapM:function(a){var b,c;for(b=0;b<a.length;++b)c=a[b],a[b]=c>>>24|c>>>8&0xff00|(c&0xff00)<<8|c<<24;return a}};sjcl.codec.utf8String={fromBits:function(a){var b="",c=sjcl.bitArray.bitLength(a),d,e;for(d=0;d<c/8;d++)0===(d&3)&&(e=a[d/4]),b+=String.fromCharCode(e>>>24),e<<=8;return decodeURIComponent(escape(b))},toBits:function(a){a=unescape(encodeURIComponent(a));var b=[],c,d=0;for(c=0;c<a.length;c++)d=d<<8|a.charCodeAt(c),3===(c&3)&&(b.push(d),d=0);c&3&&b.push(sjcl.bitArray.partial(8*(c&3),d));return b}};sjcl.codec.hex={fromBits:function(a){var b="",c;for(c=0;c<a.length;c++)b+=((a[c]|0)+0xf00000000000).toString(16).substr(4);return b.substr(0,sjcl.bitArray.bitLength(a)/4)},toBits:function(a){var b,c=[],d;a=a.replace(/\s|0x/g,"");d=a.length;a+="00000000";for(b=0;b<a.length;b+=8)c.push(parseInt(a.substr(b,8),16)^0);return sjcl.bitArray.clamp(c,4*d)}};sjcl.codec.base32={p:"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",O:"0123456789ABCDEFGHIJKLMNOPQRSTUV",BITS:32,BASE:5,REMAINING:27,fromBits:function(a,b,c){var d=sjcl.codec.base32.BASE,e=sjcl.codec.base32.REMAINING,g="",f=0,h=sjcl.codec.base32.p,l=0,k=sjcl.bitArray.bitLength(a);c&&(h=sjcl.codec.base32.O);for(c=0;g.length*d<k;)g+=h.charAt((l^a[c]>>>f)>>>e),f<d?(l=a[c]<<d-f,f+=e,c++):(l<<=d,f-=d);for(;g.length&7&&!b;)g+="=";return g},toBits:function(a,b){a=a.replace(/\s|=/g,"").toUpperCase();var c=sjcl.codec.base32.BITS,d=sjcl.codec.base32.BASE,e=sjcl.codec.base32.REMAINING,g=[],f,h=0,l=sjcl.codec.base32.p,k=0,m,n="base32";b&&(l=sjcl.codec.base32.O,n="base32hex");for(f=0;f<a.length;f++){m=l.indexOf(a.charAt(f));if(0>m){if(!b)try{return sjcl.codec.base32hex.toBits(a)}catch(p){}q(new sjcl.exception.invalid("this isn't "+n+"!"))}h>e?(h-=e,g.push(k^m>>>h),k=m<<c-h):(h+=d,k^=m<<c-h)}h&56&&g.push(sjcl.bitArray.partial(h&56,k,1));return g}};sjcl.codec.base32hex={fromBits:function(a,b){return sjcl.codec.base32.fromBits(a,b,1)},toBits:function(a){return sjcl.codec.base32.toBits(a,1)}};sjcl.codec.base64={p:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",fromBits:function(a,b,c){var d="",e=0,g=sjcl.codec.base64.p,f=0,h=sjcl.bitArray.bitLength(a);c&&(g=g.substr(0,62)+"-_");for(c=0;6*d.length<h;)d+=g.charAt((f^a[c]>>>e)>>>26),6>e?(f=a[c]<<6-e,e+=26,c++):(f<<=6,e-=6);for(;d.length&3&&!b;)d+="=";return d},toBits:function(a,b){a=a.replace(/\s|=/g,"");var c=[],d,e=0,g=sjcl.codec.base64.p,f=0,h;b&&(g=g.substr(0,62)+"-_");for(d=0;d<a.length;d++)h=g.indexOf(a.charAt(d)),0>h&&q(new sjcl.exception.invalid("this isn't base64!")),26<e?(e-=26,c.push(f^h>>>e),f=h<<32-e):(e+=6,f^=h<<32-e);e&56&&c.push(sjcl.bitArray.partial(e&56,f,1));return c}};sjcl.codec.base64url={fromBits:function(a){return sjcl.codec.base64.fromBits(a,1,1)},toBits:function(a){return sjcl.codec.base64.toBits(a,1)}};sjcl.hash.sha256=function(a){this.b[0]||this.G();a?(this.s=a.s.slice(0),this.o=a.o.slice(0),this.i=a.i):this.reset()};sjcl.hash.sha256.hash=function(a){return(new sjcl.hash.sha256).update(a).finalize()};sjcl.hash.sha256.prototype={blockSize:512,reset:function(){this.s=this.P.slice(0);this.o=[];this.i=0;return this},update:function(a){"string"===typeof a&&(a=sjcl.codec.utf8String.toBits(a));var b,c=this.o=sjcl.bitArray.concat(this.o,a);b=this.i;a=this.i=b+sjcl.bitArray.bitLength(a);for(b=512+b&-512;b<=a;b+=512)x(this,c.splice(0,16));return this},finalize:function(){var a,b=this.o,c=this.s,b=sjcl.bitArray.concat(b,[sjcl.bitArray.partial(1,1)]);for(a=b.length+2;a&15;a++)b.push(0);b.push(Math.floor(this.i/4294967296));for(b.push(this.i|0);b.length;)x(this,b.splice(0,16));this.reset();return c},P:[],b:[],G:function(){function a(a){return 0x100000000*(a-Math.floor(a))|0}var b=0,c=2,d;a:for(;64>b;c++){for(d=2;d*d<=c;d++)if(0===c%d)continue a;8>b&&(this.P[b]=a(Math.pow(c,0.5)));this.b[b]=a(Math.pow(c,1/3));b++}}};function x(a,b){var c,d,e,g=b.slice(0),f=a.s,h=a.b,l=f[0],k=f[1],m=f[2],n=f[3],p=f[4],t=f[5],r=f[6],v=f[7];for(c=0;64>c;c++)16>c?d=g[c]:(d=g[c+1&15],e=g[c+14&15],d=g[c&15]=(d>>>7^d>>>18^d>>>3^d<<25^d<<14)+(e>>>17^e>>>19^e>>>10^e<<15^e<<13)+g[c&15]+g[c+9&15]|0),d=d+v+(p>>>6^p>>>11^p>>>25^p<<26^p<<21^p<<7)+(r^p&(t^r))+h[c],v=r,r=t,t=p,p=n+d|0,n=m,m=k,k=l,l=d+(k&m^n&(k^m))+(k>>>2^k>>>13^k>>>22^k<<30^k<<19^k<<10)|0;f[0]=f[0]+l|0;f[1]=f[1]+k|0;f[2]=f[2]+m|0;f[3]=f[3]+n|0;f[4]=f[4]+p|0;f[5]=f[5]+t|0;f[6]=f[6]+r|0;f[7]=f[7]+v|0}sjcl.mode.ccm={name:"ccm",t:[],listenProgress:function(a){sjcl.mode.ccm.t.push(a)},unListenProgress:function(a){a=sjcl.mode.ccm.t.indexOf(a);-1<a&&sjcl.mode.ccm.t.splice(a,1)},X:function(a){var b=sjcl.mode.ccm.t.slice(),c;for(c=0;c<b.length;c+=1)b[c](a)},encrypt:function(a,b,c,d,e){var g,f=b.slice(0),h=sjcl.bitArray,l=h.bitLength(c)/8,k=h.bitLength(f)/8;e=e||64;d=d||[];7>l&&q(new sjcl.exception.invalid("ccm: iv must be at least 7 bytes"));for(g=2;4>g&&k>>>8*g;g++);g<15-l&&(g=15-l);c=h.clamp(c,8*(15-g));b=sjcl.mode.ccm.M(a,b,c,d,e,g);f=sjcl.mode.ccm.q(a,f,c,b,e,g);return h.concat(f.data,f.tag)},decrypt:function(a,b,c,d,e){e=e||64;d=d||[];var g=sjcl.bitArray,f=g.bitLength(c)/8,h=g.bitLength(b),l=g.clamp(b,h-e),k=g.bitSlice(b,h-e),h=(h-e)/8;7>f&&q(new sjcl.exception.invalid("ccm: iv must be at least 7 bytes"));for(b=2;4>b&&h>>>8*b;b++);b<15-f&&(b=15-f);c=g.clamp(c,8*(15-b));l=sjcl.mode.ccm.q(a,l,c,k,e,b);a=sjcl.mode.ccm.M(a,l.data,c,d,e,b);g.equal(l.tag,a)||q(new sjcl.exception.corrupt("ccm: tag doesn't match"));return l.data},ea:function(a,b,c,d,e,g){var f=[],h=sjcl.bitArray,l=h.g;d=[h.partial(8,(b.length?64:0)|d-2<<2|g-1)];d=h.concat(d,c);d[3]|=e;d=a.encrypt(d);if(b.length){c=h.bitLength(b)/8;65279>=c?f=[h.partial(16,c)]:0xffffffff>=c&&(f=h.concat([h.partial(16,65534)],[c]));f=h.concat(f,b);for(b=0;b<f.length;b+=4)d=a.encrypt(l(d,f.slice(b,b+4).concat([0,0,0])))}return d},M:function(a,b,c,d,e,g){var f=sjcl.bitArray,h=f.g;e/=8;(e%2||4>e||16<e)&&q(new sjcl.exception.invalid("ccm: invalid tag length"));(0xffffffff<d.length||0xffffffff<b.length)&&q(new sjcl.exception.bug("ccm: can't deal with 4GiB or more data"));c=sjcl.mode.ccm.ea(a,d,c,e,f.bitLength(b)/8,g);for(d=0;d<b.length;d+=4)c=a.encrypt(h(c,b.slice(d,d+4).concat([0,0,0])));return f.clamp(c,8*e)},q:function(a,b,c,d,e,g){var f,h=sjcl.bitArray;f=h.g;var l=b.length,k=h.bitLength(b),m=l/50,n=m;c=h.concat([h.partial(8,g-1)],c).concat([0,0,0]).slice(0,4);d=h.bitSlice(f(d,a.encrypt(c)),0,e);if(!l)return{tag:d,data:[]};for(f=0;f<l;f+=4)f>m&&(sjcl.mode.ccm.X(f/l),m+=n),c[3]++,e=a.encrypt(c),b[f]^=e[0],b[f+1]^=e[1],b[f+2]^=e[2],b[f+3]^=e[3];return{tag:d,data:h.clamp(b,k)}}};sjcl.mode.ocb2={name:"ocb2",encrypt:function(a,b,c,d,e,g){128!==sjcl.bitArray.bitLength(c)&&q(new sjcl.exception.invalid("ocb iv must be 128 bits"));var f,h=sjcl.mode.ocb2.J,l=sjcl.bitArray,k=l.g,m=[0,0,0,0];c=h(a.encrypt(c));var n,p=[];d=d||[];e=e||64;for(f=0;f+4<b.length;f+=4)n=b.slice(f,f+4),m=k(m,n),p=p.concat(k(c,a.encrypt(k(c,n)))),c=h(c);n=b.slice(f);b=l.bitLength(n);f=a.encrypt(k(c,[0,0,0,b]));n=l.clamp(k(n.concat([0,0,0]),f),b);m=k(m,k(n.concat([0,0,0]),f));m=a.encrypt(k(m,k(c,h(c))));d.length&&(m=k(m,g?d:sjcl.mode.ocb2.pmac(a,d)));return p.concat(l.concat(n,l.clamp(m,e)))},decrypt:function(a,b,c,d,e,g){128!==sjcl.bitArray.bitLength(c)&&q(new sjcl.exception.invalid("ocb iv must be 128 bits"));e=e||64;var f=sjcl.mode.ocb2.J,h=sjcl.bitArray,l=h.g,k=[0,0,0,0],m=f(a.encrypt(c)),n,p,t=sjcl.bitArray.bitLength(b)-e,r=[];d=d||[];for(c=0;c+4<t/32;c+=4)n=l(m,a.decrypt(l(m,b.slice(c,c+4)))),k=l(k,n),r=r.concat(n),m=f(m);p=t-32*c;n=a.encrypt(l(m,[0,0,0,p]));n=l(n,h.clamp(b.slice(c),p).concat([0,0,0]));k=l(k,n);k=a.encrypt(l(k,l(m,f(m))));d.length&&(k=l(k,g?d:sjcl.mode.ocb2.pmac(a,d)));h.equal(h.clamp(k,e),h.bitSlice(b,t))||q(new sjcl.exception.corrupt("ocb: tag doesn't match"));return r.concat(h.clamp(n,p))},pmac:function(a,b){var c,d=sjcl.mode.ocb2.J,e=sjcl.bitArray,g=e.g,f=[0,0,0,0],h=a.encrypt([0,0,0,0]),h=g(h,d(d(h)));for(c=0;c+4<b.length;c+=4)h=d(h),f=g(f,a.encrypt(g(h,b.slice(c,c+4))));c=b.slice(c);128>e.bitLength(c)&&(h=g(h,d(h)),c=e.concat(c,[-2147483648,0,0,0]));f=g(f,c);return a.encrypt(g(d(g(h,d(h))),f))},J:function(a){return[a[0]<<1^a[1]>>>31,a[1]<<1^a[2]>>>31,a[2]<<1^a[3]>>>31,a[3]<<1^135*(a[0]>>>31)]}};sjcl.mode.gcm={name:"gcm",encrypt:function(a,b,c,d,e){var g=b.slice(0);b=sjcl.bitArray;d=d||[];a=sjcl.mode.gcm.q(!0,a,g,d,c,e||128);return b.concat(a.data,a.tag)},decrypt:function(a,b,c,d,e){var g=b.slice(0),f=sjcl.bitArray,h=f.bitLength(g);e=e||128;d=d||[];e<=h?(b=f.bitSlice(g,h-e),g=f.bitSlice(g,0,h-e)):(b=g,g=[]);a=sjcl.mode.gcm.q(u,a,g,d,c,e);f.equal(a.tag,b)||q(new sjcl.exception.corrupt("gcm: tag doesn't match"));return a.data},ba:function(a,b){var c,d,e,g,f,h=sjcl.bitArray.g;e=[0,0,0,0];g=b.slice(0);for(c=0;128>c;c++){(d=0!==(a[Math.floor(c/32)]&1<<31-c%32))&&(e=h(e,g));f=0!==(g[3]&1);for(d=3;0<d;d--)g[d]=g[d]>>>1|(g[d-1]&1)<<31;g[0]>>>=1;f&&(g[0]^=-0x1f000000)}return e},h:function(a,b,c){var d,e=c.length;b=b.slice(0);for(d=0;d<e;d+=4)b[0]^=0xffffffff&c[d],b[1]^=0xffffffff&c[d+1],b[2]^=0xffffffff&c[d+2],b[3]^=0xffffffff&c[d+3],b=sjcl.mode.gcm.ba(b,a);return b},q:function(a,b,c,d,e,g){var f,h,l,k,m,n,p,t,r=sjcl.bitArray;n=c.length;p=r.bitLength(c);t=r.bitLength(d);h=r.bitLength(e);f=b.encrypt([0,0,0,0]);96===h?(e=e.slice(0),e=r.concat(e,[1])):(e=sjcl.mode.gcm.h(f,[0,0,0,0],e),e=sjcl.mode.gcm.h(f,e,[0,0,Math.floor(h/0x100000000),h&0xffffffff]));h=sjcl.mode.gcm.h(f,[0,0,0,0],d);m=e.slice(0);d=h.slice(0);a||(d=sjcl.mode.gcm.h(f,h,c));for(k=0;k<n;k+=4)m[3]++,l=b.encrypt(m),c[k]^=l[0],c[k+1]^=l[1],c[k+2]^=l[2],c[k+3]^=l[3];c=r.clamp(c,p);a&&(d=sjcl.mode.gcm.h(f,h,c));a=[Math.floor(t/0x100000000),t&0xffffffff,Math.floor(p/0x100000000),p&0xffffffff];d=sjcl.mode.gcm.h(f,d,a);l=b.encrypt(e);d[0]^=l[0];d[1]^=l[1];d[2]^=l[2];d[3]^=l[3];return{tag:r.bitSlice(d,0,g),data:c}}};sjcl.misc.hmac=function(a,b){this.N=b=b||sjcl.hash.sha256;var c=[[],[]],d,e=b.prototype.blockSize/32;this.n=[new b,new b];a.length>e&&(a=b.hash(a));for(d=0;d<e;d++)c[0][d]=a[d]^909522486,c[1][d]=a[d]^1549556828;this.n[0].update(c[0]);this.n[1].update(c[1]);this.I=new b(this.n[0])};sjcl.misc.hmac.prototype.encrypt=sjcl.misc.hmac.prototype.mac=function(a){this.S&&q(new sjcl.exception.invalid("encrypt on already updated hmac called!"));this.update(a);return this.digest(a)};sjcl.misc.hmac.prototype.reset=function(){this.I=new this.N(this.n[0]);this.S=u};sjcl.misc.hmac.prototype.update=function(a){this.S=!0;this.I.update(a)};sjcl.misc.hmac.prototype.digest=function(){var a=this.I.finalize(),a=(new this.N(this.n[1])).update(a).finalize();this.reset();return a};sjcl.misc.pbkdf2=function(a,b,c,d,e){c=c||1E3;(0>d||0>c)&&q(sjcl.exception.invalid("invalid params to pbkdf2"));"string"===typeof a&&(a=sjcl.codec.utf8String.toBits(a));"string"===typeof b&&(b=sjcl.codec.utf8String.toBits(b));e=e||sjcl.misc.hmac;a=new e(a);var g,f,h,l,k=[],m=sjcl.bitArray;for(l=1;32*k.length<(d||1);l++){e=g=a.encrypt(m.concat(b,[l]));for(f=1;f<c;f++){g=a.encrypt(g);for(h=0;h<g.length;h++)e[h]^=g[h]}k=k.concat(e)}d&&(k=m.clamp(k,d));return k};sjcl.prng=function(a){this.c=[new sjcl.hash.sha256];this.j=[0];this.H=0;this.u={};this.F=0;this.L={};this.Q=this.d=this.k=this.Z=0;this.b=[0,0,0,0,0,0,0,0];this.f=[0,0,0,0];this.C=s;this.D=a;this.r=u;this.B={progress:{},seeded:{}};this.m=this.Y=0;this.w=1;this.A=2;this.U=0x10000;this.K=[0,48,64,96,128,192,0x100,384,512,768,1024];this.V=3E4;this.T=80};sjcl.prng.prototype={randomWords:function(a,b){var c=[],d;d=this.isReady(b);var e;d===this.m&&q(new sjcl.exception.notReady("generator isn't seeded"));if(d&this.A){d=!(d&this.w);e=[];var g=0,f;this.Q=e[0]=(new Date).valueOf()+this.V;for(f=0;16>f;f++)e.push(0x100000000*Math.random()|0);for(f=0;f<this.c.length&&!(e=e.concat(this.c[f].finalize()),g+=this.j[f],this.j[f]=0,!d&&this.H&1<<f);f++);this.H>=1<<this.c.length&&(this.c.push(new sjcl.hash.sha256),this.j.push(0));this.d-=g;g>this.k&&(this.k=g);this.H++;this.b=sjcl.hash.sha256.hash(this.b.concat(e));this.C=new sjcl.cipher.aes(this.b);for(d=0;4>d&&!(this.f[d]=this.f[d]+1|0,this.f[d]);d++);}for(d=0;d<a;d+=4)0===(d+1)%this.U&&A(this),e=B(this),c.push(e[0],e[1],e[2],e[3]);A(this);return c.slice(0,a)},setDefaultParanoia:function(a,b){0===a&&"Setting paranoia=0 will ruin your security; use it only for testing"!==b&&q("Setting paranoia=0 will ruin your security; use it only for testing");this.D=a},addEntropy:function(a,b,c){c=c||"user";var d,e,g=(new Date).valueOf(),f=this.u[c],h=this.isReady(),l=0;d=this.L[c];d===s&&(d=this.L[c]=this.Z++);f===s&&(f=this.u[c]=0);this.u[c]=(this.u[c]+1)%this.c.length;switch(typeof a){case "number":b===s&&(b=1);this.c[f].update([d,this.F++,1,b,g,1,a|0]);break;case "object":c=Object.prototype.toString.call(a);if("[object Uint32Array]"===c){e=[];for(c=0;c<a.length;c++)e.push(a[c]);a=e}else{"[object Array]"!==c&&(l=1);for(c=0;c<a.length&&!l;c++)"number"!==typeof a[c]&&(l=1)}if(!l){if(b===s)for(c=b=0;c<a.length;c++)for(e=a[c];0<e;)b++,e>>>=1;this.c[f].update([d,this.F++,2,b,g,a.length].concat(a))}break;case "string":b===s&&(b=a.length);this.c[f].update([d,this.F++,3,b,g,a.length]);this.c[f].update(a);break;default:l=1}l&&q(new sjcl.exception.bug("random: addEntropy only supports number, array of numbers or string"));this.j[f]+=b;this.d+=b;h===this.m&&(this.isReady()!==this.m&&C("seeded",Math.max(this.k,this.d)),C("progress",this.getProgress()))},isReady:function(a){a=this.K[a!==s?a:this.D];return this.k&&this.k>=a?this.j[0]>this.T&&(new Date).valueOf()>this.Q?this.A|this.w:this.w:this.d>=a?this.A|this.m:this.m},getProgress:function(a){a=this.K[a?a:this.D];return this.k>=a?1:this.d>a?1:this.d/a},startCollectors:function(){this.r||(this.a={loadTimeCollector:D(this,this.da),mouseCollector:D(this,this.fa),keyboardCollector:D(this,this.ca),accelerometerCollector:D(this,this.W),touchCollector:D(this,this.ha)},window.addEventListener?(window.addEventListener("load",this.a.loadTimeCollector,u),window.addEventListener("mousemove",this.a.mouseCollector,u),window.addEventListener("keypress",this.a.keyboardCollector,u),window.addEventListener("devicemotion",this.a.accelerometerCollector,u),window.addEventListener("touchmove",this.a.touchCollector,u)):document.attachEvent?(document.attachEvent("onload",this.a.loadTimeCollector),document.attachEvent("onmousemove",this.a.mouseCollector),document.attachEvent("keypress",this.a.keyboardCollector)):q(new sjcl.exception.bug("can't attach event")),this.r=!0)},stopCollectors:function(){this.r&&(window.removeEventListener?(window.removeEventListener("load",this.a.loadTimeCollector,u),window.removeEventListener("mousemove",this.a.mouseCollector,u),window.removeEventListener("keypress",this.a.keyboardCollector,u),window.removeEventListener("devicemotion",this.a.accelerometerCollector,u),window.removeEventListener("touchmove",this.a.touchCollector,u)):document.detachEvent&&(document.detachEvent("onload",this.a.loadTimeCollector),document.detachEvent("onmousemove",this.a.mouseCollector),document.detachEvent("keypress",this.a.keyboardCollector)),this.r=u)},addEventListener:function(a,b){this.B[a][this.Y++]=b},removeEventListener:function(a,b){var c,d,e=this.B[a],g=[];for(d in e)e.hasOwnProperty(d)&&e[d]===b&&g.push(d);for(c=0;c<g.length;c++)d=g[c],delete e[d]},ca:function(){E(1)},fa:function(a){var b,c;try{b=a.x||a.clientX||a.offsetX||0,c=a.y||a.clientY||a.offsetY||0}catch(d){c=b=0}0!=b&&0!=c&&sjcl.random.addEntropy([b,c],2,"mouse");E(0)},ha:function(a){a=a.touches[0]||a.changedTouches[0];sjcl.random.addEntropy([a.pageX||a.clientX,a.pageY||a.clientY],1,"touch");E(0)},da:function(){E(2)},W:function(a){a=a.accelerationIncludingGravity.x||a.accelerationIncludingGravity.y||a.accelerationIncludingGravity.z;if(window.orientation){var b=window.orientation;"number"===typeof b&&sjcl.random.addEntropy(b,1,"accelerometer")}a&&sjcl.random.addEntropy(a,2,"accelerometer");E(0)}};function C(a,b){var c,d=sjcl.random.B[a],e=[];for(c in d)d.hasOwnProperty(c)&&e.push(d[c]);for(c=0;c<e.length;c++)e[c](b)}function E(a){"undefined"!==typeof window&&window.performance&&"function"===typeof window.performance.now?sjcl.random.addEntropy(window.performance.now(),a,"loadtime"):sjcl.random.addEntropy((new Date).valueOf(),a,"loadtime")}function A(a){a.b=B(a).concat(B(a));a.C=new sjcl.cipher.aes(a.b)}function B(a){for(var b=0;4>b&&!(a.f[b]=a.f[b]+1|0,a.f[b]);b++);return a.C.encrypt(a.f)}function D(a,b){return function(){b.apply(a,arguments)}}sjcl.random=new sjcl.prng(6);a:try{var F,G,H,I;if(I="undefined"!==typeof module){var J;if(J=module.exports){var K;try{K=require("crypto")}catch(L){K=null}J=(G=K)&&G.randomBytes}I=J}if(I)F=G.randomBytes(128),F=new Uint32Array((new Uint8Array(F)).buffer),sjcl.random.addEntropy(F,1024,"crypto['randomBytes']");else if("undefined"!==typeof window&&"undefined"!==typeof Uint32Array){H=new Uint32Array(32);if(window.crypto&&window.crypto.getRandomValues)window.crypto.getRandomValues(H);else if(window.msCrypto&&window.msCrypto.getRandomValues)window.msCrypto.getRandomValues(H);else break a;sjcl.random.addEntropy(H,1024,"crypto['getRandomValues']")}}catch(M){"undefined"!==typeof window&&window.console&&(console.log("There was an error collecting entropy from the browser:"),console.log(M))}sjcl.json={defaults:{v:1,iter:1E3,ks:128,ts:64,mode:"ccm",adata:"",cipher:"aes"},aa:function(a,b,c,d){c=c||{};d=d||{};var e=sjcl.json,g=e.e({iv:sjcl.random.randomWords(4,0)},e.defaults),f;e.e(g,c);c=g.adata;"string"===typeof g.salt&&(g.salt=sjcl.codec.base64.toBits(g.salt));"string"===typeof g.iv&&(g.iv=sjcl.codec.base64.toBits(g.iv));(!sjcl.mode[g.mode]||!sjcl.cipher[g.cipher]||"string"===typeof a&&100>=g.iter||64!==g.ts&&96!==g.ts&&128!==g.ts||128!==g.ks&&192!==g.ks&&0x100!==g.ks||2>g.iv.length||4<g.iv.length)&&q(new sjcl.exception.invalid("json encrypt: invalid parameters"));"string"===typeof a?(f=sjcl.misc.cachedPbkdf2(a,g),a=f.key.slice(0,g.ks/32),g.salt=f.salt):sjcl.ecc&&a instanceof sjcl.ecc.elGamal.publicKey&&(f=a.kem(),g.kemtag=f.tag,a=f.key.slice(0,g.ks/32));"string"===typeof b&&(b=sjcl.codec.utf8String.toBits(b));"string"===typeof c&&(g.adata=c=sjcl.codec.utf8String.toBits(c));f=new sjcl.cipher[g.cipher](a);e.e(d,g);d.key=a;g.ct="ccm"===g.mode&&sjcl.arrayBuffer&&sjcl.arrayBuffer.ccm&&b instanceof ArrayBuffer?sjcl.arrayBuffer.ccm.encrypt(f,b,g.iv,c,g.ts):sjcl.mode[g.mode].encrypt(f,b,g.iv,c,g.ts);return g},encrypt:function(a,b,c,d){var e=sjcl.json,g=e.aa.apply(e,arguments);return e.encode(g)},$:function(a,b,c,d){c=c||{};d=d||{};var e=sjcl.json;b=e.e(e.e(e.e({},e.defaults),b),c,!0);var g,f;g=b.adata;"string"===typeof b.salt&&(b.salt=sjcl.codec.base64.toBits(b.salt));"string"===typeof b.iv&&(b.iv=sjcl.codec.base64.toBits(b.iv));(!sjcl.mode[b.mode]||!sjcl.cipher[b.cipher]||"string"===typeof a&&100>=b.iter||64!==b.ts&&96!==b.ts&&128!==b.ts||128!==b.ks&&192!==b.ks&&0x100!==b.ks||!b.iv||2>b.iv.length||4<b.iv.length)&&q(new sjcl.exception.invalid("json decrypt: invalid parameters"));"string"===typeof a?(f=sjcl.misc.cachedPbkdf2(a,b),a=f.key.slice(0,b.ks/32),b.salt=f.salt):sjcl.ecc&&a instanceof sjcl.ecc.elGamal.secretKey&&(a=a.unkem(sjcl.codec.base64.toBits(b.kemtag)).slice(0,b.ks/32));"string"===typeof g&&(g=sjcl.codec.utf8String.toBits(g));f=new sjcl.cipher[b.cipher](a);g="ccm"===b.mode&&sjcl.arrayBuffer&&sjcl.arrayBuffer.ccm&&b.ct instanceof ArrayBuffer?sjcl.arrayBuffer.ccm.decrypt(f,b.ct,b.iv,b.tag,g,b.ts):sjcl.mode[b.mode].decrypt(f,b.ct,b.iv,g,b.ts);e.e(d,b);d.key=a;return 1===c.raw?g:sjcl.codec.utf8String.fromBits(g)},decrypt:function(a,b,c,d){var e=sjcl.json;return e.$(a,e.decode(b),c,d)},encode:function(a){var b,c="{",d="";for(b in a)if(a.hasOwnProperty(b))switch(b.match(/^[a-z0-9]+$/i)||q(new sjcl.exception.invalid("json encode: invalid property name")),c+=d+'"'+b+'":',d=",",typeof a[b]){case "number":case "boolean":c+=a[b];break;case "string":c+='"'+escape(a[b])+'"';break;case "object":c+='"'+sjcl.codec.base64.fromBits(a[b],0)+'"';break;default:q(new sjcl.exception.bug("json encode: unsupported type"))}return c+"}"},decode:function(a){a=a.replace(/\s/g,"");a.match(/^\{.*\}$/)||q(new sjcl.exception.invalid("json decode: this isn't json!"));a=a.replace(/^\{|\}$/g,"").split(/,/);var b={},c,d;for(c=0;c<a.length;c++)(d=a[c].match(/^\s*(?:(["']?)([a-z][a-z0-9]*)\1)\s*:\s*(?:(-?\d+)|"([a-z0-9+\/%*_.@=\-]*)"|(true|false))$/i))||q(new sjcl.exception.invalid("json decode: this isn't json!")),null!=d[3]?b[d[2]]=parseInt(d[3],10):null!=d[4]?b[d[2]]=d[2].match(/^(ct|adata|salt|iv)$/)?sjcl.codec.base64.toBits(d[4]):unescape(d[4]):null!=d[5]&&(b[d[2]]="true"===d[5]);return b},e:function(a,b,c){a===s&&(a={});if(b===s)return a;for(var d in b)b.hasOwnProperty(d)&&(c&&(a[d]!==s&&a[d]!==b[d])&&q(new sjcl.exception.invalid("required parameter overridden")),a[d]=b[d]);return a},ja:function(a,b){var c={},d;for(d in a)a.hasOwnProperty(d)&&a[d]!==b[d]&&(c[d]=a[d]);return c},ia:function(a,b){var c={},d;for(d=0;d<b.length;d++)a[b[d]]!==s&&(c[b[d]]=a[b[d]]);return c}};sjcl.encrypt=sjcl.json.encrypt;sjcl.decrypt=sjcl.json.decrypt;sjcl.misc.ga={};sjcl.misc.cachedPbkdf2=function(a,b){var c=sjcl.misc.ga,d;b=b||{};d=b.iter||1E3;c=c[a]=c[a]||{};d=c[d]=c[d]||{firstSalt:b.salt&&b.salt.length?b.salt.slice(0):sjcl.random.randomWords(2,0)};c=b.salt===s?d.firstSalt:b.salt;d[c]=d[c]||sjcl.misc.pbkdf2(a,c,b.iter);return{key:d[c].slice(0),salt:c.slice(0)}};
-/* global md5 */
-
-/* OpenSprinkler App
- * Copyright (C) 2015 - present, Samer Albahra. All rights reserved.
- *
- * This file is part of the OpenSprinkler project <http://opensprinkler.com>.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-// jscs:disable
-// jshint ignore:start
-
-// Define MD5 library (see libs.js for attribution)
-!function(a){"use strict";function b(a,b){var c=(65535&a)+(65535&b),d=(a>>16)+(b>>16)+(c>>16);return d<<16|65535&c}function c(a,b){return a<<b|a>>>32-b}function d(a,d,e,f,g,h){return b(c(b(b(d,a),b(f,h)),g),e)}function e(a,b,c,e,f,g,h){return d(b&c|~b&e,a,b,f,g,h)}function f(a,b,c,e,f,g,h){return d(b&e|c&~e,a,b,f,g,h)}function g(a,b,c,e,f,g,h){return d(b^c^e,a,b,f,g,h)}function h(a,b,c,e,f,g,h){return d(c^(b|~e),a,b,f,g,h)}function i(a,c){a[c>>5]|=128<<c%32,a[(c+64>>>9<<4)+14]=c;var d,i,j,k,l,m=1732584193,n=-271733879,o=-1732584194,p=271733878;for(d=0;d<a.length;d+=16)i=m,j=n,k=o,l=p,m=e(m,n,o,p,a[d],7,-680876936),p=e(p,m,n,o,a[d+1],12,-389564586),o=e(o,p,m,n,a[d+2],17,606105819),n=e(n,o,p,m,a[d+3],22,-1044525330),m=e(m,n,o,p,a[d+4],7,-176418897),p=e(p,m,n,o,a[d+5],12,1200080426),o=e(o,p,m,n,a[d+6],17,-1473231341),n=e(n,o,p,m,a[d+7],22,-45705983),m=e(m,n,o,p,a[d+8],7,1770035416),p=e(p,m,n,o,a[d+9],12,-1958414417),o=e(o,p,m,n,a[d+10],17,-42063),n=e(n,o,p,m,a[d+11],22,-1990404162),m=e(m,n,o,p,a[d+12],7,1804603682),p=e(p,m,n,o,a[d+13],12,-40341101),o=e(o,p,m,n,a[d+14],17,-1502002290),n=e(n,o,p,m,a[d+15],22,1236535329),m=f(m,n,o,p,a[d+1],5,-165796510),p=f(p,m,n,o,a[d+6],9,-1069501632),o=f(o,p,m,n,a[d+11],14,643717713),n=f(n,o,p,m,a[d],20,-373897302),m=f(m,n,o,p,a[d+5],5,-701558691),p=f(p,m,n,o,a[d+10],9,38016083),o=f(o,p,m,n,a[d+15],14,-660478335),n=f(n,o,p,m,a[d+4],20,-405537848),m=f(m,n,o,p,a[d+9],5,568446438),p=f(p,m,n,o,a[d+14],9,-1019803690),o=f(o,p,m,n,a[d+3],14,-187363961),n=f(n,o,p,m,a[d+8],20,1163531501),m=f(m,n,o,p,a[d+13],5,-1444681467),p=f(p,m,n,o,a[d+2],9,-51403784),o=f(o,p,m,n,a[d+7],14,1735328473),n=f(n,o,p,m,a[d+12],20,-1926607734),m=g(m,n,o,p,a[d+5],4,-378558),p=g(p,m,n,o,a[d+8],11,-2022574463),o=g(o,p,m,n,a[d+11],16,1839030562),n=g(n,o,p,m,a[d+14],23,-35309556),m=g(m,n,o,p,a[d+1],4,-1530992060),p=g(p,m,n,o,a[d+4],11,1272893353),o=g(o,p,m,n,a[d+7],16,-155497632),n=g(n,o,p,m,a[d+10],23,-1094730640),m=g(m,n,o,p,a[d+13],4,681279174),p=g(p,m,n,o,a[d],11,-358537222),o=g(o,p,m,n,a[d+3],16,-722521979),n=g(n,o,p,m,a[d+6],23,76029189),m=g(m,n,o,p,a[d+9],4,-640364487),p=g(p,m,n,o,a[d+12],11,-421815835),o=g(o,p,m,n,a[d+15],16,530742520),n=g(n,o,p,m,a[d+2],23,-995338651),m=h(m,n,o,p,a[d],6,-198630844),p=h(p,m,n,o,a[d+7],10,1126891415),o=h(o,p,m,n,a[d+14],15,-1416354905),n=h(n,o,p,m,a[d+5],21,-57434055),m=h(m,n,o,p,a[d+12],6,1700485571),p=h(p,m,n,o,a[d+3],10,-1894986606),o=h(o,p,m,n,a[d+10],15,-1051523),n=h(n,o,p,m,a[d+1],21,-2054922799),m=h(m,n,o,p,a[d+8],6,1873313359),p=h(p,m,n,o,a[d+15],10,-30611744),o=h(o,p,m,n,a[d+6],15,-1560198380),n=h(n,o,p,m,a[d+13],21,1309151649),m=h(m,n,o,p,a[d+4],6,-145523070),p=h(p,m,n,o,a[d+11],10,-1120210379),o=h(o,p,m,n,a[d+2],15,718787259),n=h(n,o,p,m,a[d+9],21,-343485551),m=b(m,i),n=b(n,j),o=b(o,k),p=b(p,l);return[m,n,o,p]}function j(a){var b,c="";for(b=0;b<32*a.length;b+=8)c+=String.fromCharCode(a[b>>5]>>>b%32&255);return c}function k(a){var b,c=[];for(c[(a.length>>2)-1]=void 0,b=0;b<c.length;b+=1)c[b]=0;for(b=0;b<8*a.length;b+=8)c[b>>5]|=(255&a.charCodeAt(b/8))<<b%32;return c}function l(a){return j(i(k(a),8*a.length))}function m(a,b){var c,d,e=k(a),f=[],g=[];for(f[15]=g[15]=void 0,e.length>16&&(e=i(e,8*a.length)),c=0;16>c;c+=1)f[c]=909522486^e[c],g[c]=1549556828^e[c];return d=i(f.concat(k(b)),512+8*b.length),j(i(g.concat(d),640))}function n(a){var b,c,d="0123456789abcdef",e="";for(c=0;c<a.length;c+=1)b=a.charCodeAt(c),e+=d.charAt(b>>>4&15)+d.charAt(15&b);return e}function o(a){return unescape(encodeURIComponent(a))}function p(a){return l(o(a))}function q(a){return n(p(a))}function r(a,b){return m(o(a),o(b))}function s(a,b){return n(r(a,b))}function t(a,b,c){return b?c?r(b,a):s(b,a):c?p(a):q(a)}"function"==typeof define&&define.amd?define(function(){return t}):a.md5=t}(this);
-
-// jshint ignore:end
-// jscs:enable
-var form = document.forms[ 0 ];
-if ( form && form.addEventListener ) {
-
-	// Handle modern browsers
-	form.addEventListener( "submit", beforeSubmit, false );
-} else if ( form && form.attachEvent ) {
-
-	// Handle old IE
-	form.attachEvent( "onsubmit", beforeSubmit );
-}
-
-// Hash password on form submission
-function beforeSubmit() {
-	var pw = form.elements.pw,
-		current = pw.value,
-		isHashed = /^[a-f0-9]{32}$/i.test( current );
-
-	if ( !isHashed ) {
-		pw.value = md5( current );
-	}
-}
-/*global google */
-
-/* OpenSprinkler App
- * Copyright (C) 2015 - present, Samer Albahra. All rights reserved.
- *
- * This file is part of the OpenSprinkler project <http://opensprinkler.com>.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-( function() {
-	function getScript( src ) {
-		var a = document.createElement( "script" );
-		a.src = src;
-		document.getElementsByTagName( "head" )[ 0 ].appendChild( a );
-	}
-
-	getScript( "https://maps.googleapis.com/maps/api/js?key=AIzaSyDaT_HTZwFojXmvYIhwWudK00vFXzMmOKc&libraries=places" );
-} )();
-
-var markers = { pws: [], origin: [] },
-	stations = [],
-	priorIdle, map, infoWindow, droppedPin, start, current;
-
-// Handle select button for weather station selection
-document.addEventListener( "click", function( e ) {
-	if ( e.target.tagName !== "BUTTON" ) {
-		return;
-	}
-	var classes = e.target.className.split( " " );
-	if ( classes.indexOf( "submitPWS" ) > -1 ) {
-		window.top.postMessage( { WS: e.target.dataset.loc, station: e.target.dataset.id }, "*" );
-	} else if ( classes.indexOf( "submit" ) > -1 ) {
-		window.top.postMessage( { WS: e.target.dataset.loc }, "*" );
-	}
-}, false );
-
-// Load the map using the controller's current location
-function initialize() {
-	if ( typeof start === "object" ) {
-		var myOptions = {
-			zoom: 14,
-			maxZoom: 17,
-			center: start,
-			streetViewControl: false,
-			mapTypeControl: false,
-			mapTypeId: google.maps.MapTypeId.ROADMAP,
-			zoomControl: true,
-			zoomControlOptions: {
-				position: google.maps.ControlPosition.LEFT_BOTTOM
-			},
-			styles: [
-				{ featureType: "poi", elementType: "labels", stylers: [ { visibility: "off" } ] },
-				{ featureType: "transit", elementType: "labels", stylers: [ { visibility: "off" } ] }
-			]
-		};
-
-		map = new google.maps.Map( document.getElementById( "map_canvas" ), myOptions );
-		infoWindow = new google.maps.InfoWindow();
-
-		// Setup SearchBox for auto completion
-		var controlBox = document.getElementById( "customControls" ),
-			searchField = document.getElementById( "pac-input" ),
-			searchBox = new google.maps.places.SearchBox( searchField );
-
-		controlBox.style.display = "block";
-
-		map.controls[ google.maps.ControlPosition.TOP_LEFT ].push( controlBox );
-
-		// Bias the SearchBox results towards current map's viewport.
-		map.addListener( "bounds_changed", function() {
-			searchBox.setBounds( map.getBounds() );
-		} );
-
-		searchBox.addListener( "places_changed", function() {
-			var places = searchBox.getPlaces();
-			if ( places.length === 0 ) {
-				return;
-			}
-
-			if ( droppedPin ) {
-				droppedPin.setMap( null );
-				droppedPin = null;
-			}
-			droppedPin = plotMarker( "origin", { message: "Selected Location" }, places[ 0 ].geometry.location.lat(), places[ 0 ].geometry.location.lng() );
-			map.setCenter( droppedPin.getPosition() );
-		} );
-
-		var jumpToCurrent = document.getElementById( "jumpCurrent" );
-
-		// Bind the current location button
-		jumpToCurrent.addEventListener( "click", function() {
-			window.top.postMessage( { getLocation: true }, "*" );
-		} );
-
-		// If a start location is specified, display and center it now
-		if ( start.lat() !== 0 && start.lng() !== 0 ) {
-			droppedPin = plotMarker( "origin", { message: "Selected Location" }, start.lat(), start.lng() );
-		}
-
-		// Once the UI/tiles are loaded, let the parent script know
-		google.maps.event.addListenerOnce( map, "tilesloaded", function() {
-			window.top.postMessage( { loaded: true }, "*" );
-
-			// Fix autocomplete field for iOS (blur event never fires and therefore redirection does not occur)
-			if ( /iP(ad|hone|od)/.test( navigator.userAgent ) ) {
-				var predictionContainer = document.querySelectorAll( ".pac-container" )[ 0 ];
-
-				predictionContainer.addEventListener( "mousedown", function() {
-					window.top.postMessage( { dismissKeyboard: true }, "*" );
-				} );
-
-			}
-		} );
-
-		// When the map is clicked, close any open info windows
-		google.maps.event.addListener( map, "click", function() {
-			infoWindow.close();
-		} );
-
-		// Handle dropping of a new pin / location
-		google.maps.event.addListener( map, "click", function( event ) {
-			if ( droppedPin ) {
-				droppedPin.setMap( null );
-				droppedPin = null;
-			}
-			droppedPin = plotMarker( "origin", { message: "Selected Location" }, event.latLng.lat(), event.latLng.lng() );
-		} );
-
-		// When the map center changes, update the weather stations shown
-		map.addListener( "idle", function() {
-			if ( getDistance( map.getCenter(), priorIdle ) < 15000 || map.getZoom() < 9 ) {
-				return;
-			}
-
-			priorIdle = map.getCenter();
-			removeAllMarkers();
-			window.top.postMessage( {
-				location: [ map.getCenter().lat(), map.getCenter().lng() ]
-			}, "*" );
-		} );
-
-		// If any stations are saved already, draw them on the map
-		if ( stations.length > 0 ) {
-			plotAllMarkers( stations );
-		}
-	} else {
-		setTimeout( initialize, 1 );
-	}
-}
-
-// Handle communication from parent window
-window.onmessage = function( e ) {
-	var data = e.data;
-
-	// Handle start point data
-	if ( data.type === "startLocation" ) {
-		start = new google.maps.LatLng( data.payload.start.lat, data.payload.start.lon );
-		priorIdle = start;
-		initialize();
-
-	// Handle stations data
-	} else if ( data.type === "pwsData" ) {
-		stations = JSON.parse( decodeURIComponent( data.payload ) );
-		removeAllMarkers();
-		plotAllMarkers( stations );
-	} else if ( data.type === "currentLocation" ) {
-		if ( current ) {
-			current.setMap( null );
-		}
-		current = new google.maps.LatLng( data.payload.lat, data.payload.lon );
-		showCurrentLocation();
-	}
-};
-
-// Plot all stations on the map
-function plotAllMarkers( markers ) {
-	for ( var i = 0; i < markers.length; i++ ) {
-		plotMarker( "pws", markers[ i ], markers[ i ].lat, markers[ i ].lon );
-	}
-}
-
-// Plot an individual station on the map
-function plotMarker( type, data, lat, lon ) {
-	var marker = new google.maps.Marker( {
-			position: new google.maps.LatLng( lat, lon ),
-			map: map,
-			icon: type === "origin" ? "https://maps.google.com/mapfiles/ms/icons/red-dot.png" : "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-		} );
-
-	google.maps.event.addListener( marker, "click", function() {
-		infoWindow.close();
-		var html = createInfoWindow( type, data, lat + "," + lon );
-		infoWindow = new google.maps.InfoWindow( {
-			content: html
-		} );
-		infoWindow.open( map, marker );
-	} );
-
-	markers[ type ].push( marker );
-
-	if ( data.message === "Selected Location" ) {
-		google.maps.event.trigger( marker, "click" );
-	}
-
-	return marker;
-}
-
-// Removes markers of specified type
-function removeAllMarkers() {
-	for ( var i = 0; i < markers.pws.length; i++ ) {
-		markers.pws[ i ].setMap( null );
-	}
-	markers.pws = [];
-}
-
-// Create text for popup info window
-function createInfoWindow( type, data, latLon ) {
-	return "<div style='min-height:40px;text-align:center'>" + data.message + "<br><br><button class='submit" + ( type === "pws" ? "PWS' data-id='" + data.id : "" ) + "' data-loc='" + latLon + "'>Submit</button></div>";
-}
-
-function showCurrentLocation() {
-
-	// The app uses -999, -999 when geolocation is not possible which is resolved to -90, 81
-	if ( current.lat() !== -90 && current.lng() !== 81 ) {
-		current = plotMarker( "origin", { message: "Current Location" }, current.lat(), current.lng() );
-
-		map.setCenter( { lat: current.getPosition().lat(), lng: current.getPosition().lng() } );
-		infoWindow.close();
-		google.maps.event.trigger( current, "click" );
-	}
-}
-
-function rad( x ) {
-	return x * Math.PI / 180;
-}
-
-function getDistance( p1, p2 ) {
-	var R = 6378137,
-		dLat = rad( p2.lat() - p1.lat() ),
-		dLong = rad( p2.lng() - p1.lng() ),
-		a = Math.sin( dLat / 2 ) * Math.sin( dLat / 2 ) +
-			Math.cos( rad( p1.lat() ) ) * Math.cos( rad( p2.lat() ) ) *
-			Math.sin( dLong / 2 ) * Math.sin( dLong / 2 ),
-		c = 2 * Math.atan2( Math.sqrt( a ), Math.sqrt( 1 - a ) );
-
-  return R * c;
-}
 /* global $, ThreeDeeTouch, Windows, MSApp, navigator, chrome, FastClick */
 /* global StatusBar, networkinterface, links, SunCalc, md5, sjcl, Camera */
 
@@ -493,7 +196,7 @@ var isIEMobile = /IEMobile/.test( navigator.userAgent ),
 	// Define the mapping between options and JSON keys
 	keyIndex = {
 		"tz":1, "ntp":2, "dhcp":3, "ip1":4, "ip2":5, "ip3":6, "ip4":7, "gw1":8, "gw2":9, "gw3":10, "gw4":11,
-		"hp0":12, "hp1":13, "ar":14, "ext":15, "seq":16, "sdt":17, "mas":18, "mton":19, "mtof":20, "urs":21, "rso":22,
+		"hp0":12, "hp1":13, "ar":14, "nstn":15, "seq":16, "sdt":17, "mas":18, "mton":19, "mtof":20, "urs":21, "rso":22,
 		"wl":23, "den":24, "ipas":25, "devid":26, "con":27, "lit":28, "dim":29, "bst":30, "uwt":31, "ntp1":32, "ntp2":33,
 		"ntp3":34, "ntp4":35, "lg":36, "mas2":37, "mton2":38, "mtof2":39, "fpr0":41, "fpr1":42, "re":43, "dns1": 44,
 		"dns2":45, "dns3":46, "dns4":47, "sar":48, "ife":49, "sn1t":50, "sn1o":51, "sn2t":52, "sn2o":53, "sn1on":54,
@@ -503,7 +206,7 @@ var isIEMobile = /IEMobile/.test( navigator.userAgent ),
 	// Array to hold all notifications currently displayed within the app
 	notifications = [],
 	timers = {},
-	curr183, currIp, currPrefix, currAuth, currPass, currAuthUser,
+	currIp, currPrefix, currAuth, currPass, currAuthUser,
 	currAuthPass, currLocal, currLang, language, deviceip, errorTimeout, weather, openPanel;
 
 // Prevent errors from bubbling up on Windows
@@ -1068,13 +771,6 @@ function sendToOS( dest, type ) {
 		} );
 	}
 
-	if ( curr183 ) {
-
-		// Firmware 1.8.3 has a bug handling the time stamp in the GET request
-		$.extend( obj, {
-			cache: "true"
-		} );
-	}
 
 	defer = $.ajaxq( queue, obj ).then(
 		function( data ) {
@@ -1308,267 +1004,114 @@ function updateController( callback, fail ) {
 		callback();
 	};
 
-	if ( isControllerConnected() && checkOSVersion( 216 ) ) {
-		sendToOS( "/ja?pw=", "json" ).then( function( data ) {
-
-			if ( typeof data === "undefined" || $.isEmptyObject( data ) ) {
-				fail();
-				return;
-			}
-
-			// The /ja call does not contain special station data, so let's cache it
-			var special = controller.special;
-
-			controller = data;
-
-			// Restore the station cache to the object
-			controller.special = special;
-
-			// Fix the station status array
-			controller.status = controller.status.sn;
-
-			finish();
-		}, fail );
-	} else {
-		$.when(
-			updateControllerPrograms(),
-			updateControllerStations(),
-			updateControllerOptions(),
-			updateControllerStatus(),
-			updateControllerSettings()
-		).then( finish, fail );
-	}
+	$.when(
+		updateControllerPrograms(),
+		updateControllerStations(),
+		updateControllerOptions(),
+		updateControllerStatus(),
+		updateControllerSettings()
+	).then( finish, fail );
 }
 
 function updateControllerPrograms( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/gp?d=0" ).done( function( programs ) {
-			var vars = programs.match( /(nprogs|nstations|mnp)=[\w|\d|.\"]+/g ),
-				progs = /pd=\[\];(.*);/.exec( programs ),
-				newdata = {}, tmp, prog;
-
-			for ( var i = 0; i < vars.length; i++ ) {
-				if ( vars[ i ] === "" ) {
-					continue;
-				}
-				tmp = vars[ i ].split( "=" );
-				newdata[ tmp[ 0 ] ] = parseInt( tmp[ 1 ] );
-			}
-
-			newdata.pd = [];
-			if ( progs !== null ) {
-				progs = progs[ 1 ].split( ";" );
-				for ( i = 0; i < progs.length; i++ ) {
-					prog = progs[ i ].split( "=" );
-					prog = prog[ 1 ].replace( "[", "" );
-					prog = prog.replace( "]", "" );
-					newdata.pd[ i ] = parseIntArray( prog.split( "," ) );
-				}
-			}
-
-			controller.programs = newdata;
-			callback();
-		} );
-	} else {
-		return sendToOS( "/jp?pw=", "json" ).done( function( programs ) {
-			controller.programs = programs;
-			callback();
-		} );
-	}
+	return sendToOS( "/jp?pw=", "json" ).done( function( programs ) {
+		controller.programs = programs;
+		callback();
+	} );
 }
 
 function updateControllerStations( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/vs" ).done( function( stations ) {
-			var names = /snames=\[(.*?)\];/.exec( stations ),
-				masop = stations.match( /(?:masop|mo)\s?[=|:]\s?\[(.*?)\]/ );
-
-			names = names[ 1 ].split( "," );
-			names.pop();
-
-			for ( var i = 0; i < names.length; i++ ) {
-				names[ i ] = names[ i ].replace( /'/g, "" );
-			}
-
-			masop = parseIntArray( masop[ 1 ].split( "," ) );
-
-			controller.stations = {
-				"snames": names,
-				"masop": masop,
-				"maxlen": names.length
-			};
-			callback();
-		} );
-	} else {
-		return sendToOS( "/jn?pw=", "json" ).done( function( stations ) {
-			controller.stations = stations;
-			callback();
-		} );
-	}
+	return sendToOS( "/jn?pw=", "json" ).done( function( stations ) {
+		controller.stations = stations;
+		callback();
+	} );
 }
 
 function updateControllerOptions( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/vo" ).done( function( options ) {
-			var isOSPi = options.match( /var sd\s*=/ ),
-				vars = {}, tmp, i, o;
-
-			if ( isOSPi ) {
-				var varsRegex = /(tz|htp|htp2|nbrd|seq|sdt|mas|mton|mtoff|urs|rst|wl|ipas)\s?[=|:]\s?([\w|\d|.\"]+)/gm,
-					name;
-
-				while ( ( tmp = varsRegex.exec( options ) ) !== null ) {
-					name = tmp[ 1 ].replace( "nbrd", "ext" ).replace( "mtoff", "mtof" );
-					vars[ name ] = +tmp[ 2 ];
-				}
-				vars.ext--;
-				vars.fwv = "1.8.3-ospi";
-			} else {
-				var valid = [ 1, 2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26 ];
-				tmp = /var opts=\[(.*)\];/.exec( options );
-				tmp = tmp[ 1 ].replace( /"/g, "" ).split( "," );
-
-				for ( i = 0; i < tmp.length - 1; i = i + 4 ) {
-					o = +tmp[ i + 3 ];
-					if ( $.inArray( o, valid ) !== -1 ) {
-						vars[ keyIndex[ o ] ] = +tmp[ i + 2 ];
-					}
-				}
-				vars.fwv = 183;
-			}
-			controller.options = vars;
-			callback();
-		} );
-	} else {
-		return sendToOS( "/jo?pw=", "json" ).done( function( options ) {
-			controller.options = options;
-			callback();
-		} );
-	}
+	return sendToOS( "/jo?pw=", "json" ).done( function( options ) {
+		controller.options = options;
+		callback();
+	} );
 }
 
 function updateControllerStatus( callback ) {
 	callback = callback || function() {};
+	return sendToOS( "/js?pw=", "json" ).then(
+		function( status ) {
+			controller.status_sn = status.sn;
+			controller.status = function(i){
+				let m = 1<<(i&0x07);
+				i >>= 3;
+				if (i >= controller.status_sn.length)
+					return 0;
+				return controller.status_sn[i] & m;
+			};
 
-	if ( curr183 === true ) {
+			controller.set_status = function(i, v){
+				let m = 1<<(i&0x07);
+				i >>= 3;
+				if (i >= controller.status_sn.length)
+					return;
+				if (v)
+					controller.status_sn[i] &= ~m;
+				else
+					controller.status_sn[i] |= m;
+			};
 
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "/sn0" ).then(
-			function( status ) {
-				var tmp = status.toString().match( /\d+/ );
-
-				tmp = parseIntArray( tmp[ 0 ].split( "" ) );
-
-				controller.status = tmp;
-				callback();
-			},
-			function() {
-				controller.status = [];
-			} );
-	} else {
-		return sendToOS( "/js?pw=", "json" ).then(
-			function( status ) {
-				controller.status = status.sn;
-				callback();
-			},
-			function() {
-				controller.status = [];
-			} );
-	}
+			callback();
+		},
+		function() {
+			controller.status_sn = [];
+			controller.status = function(i){ return 0;}
+			controller.set_status = function(i, v){}
+		} );
 }
 
 function updateControllerSettings( callback ) {
 	callback = callback || function() {};
-
-	if ( curr183 === true ) {
-
-		// If the controller is using firmware 1.8.3, then parse the script tag for variables
-		return sendToOS( "" ).then(
-			function( settings ) {
-				var varsRegex = /(ver|devt|nbrd|tz|en|rd|rs|mm|rdst|urs)\s?[=|:]\s?([\w|\d|.\"]+)/gm,
-					loc = settings.match( /loc\s?[=|:]\s?[\"|'](.*)[\"|']/ ),
-					lrun = settings.match( /lrun=\[(.*)\]/ ),
-					ps = settings.match( /ps=\[(.*)\];/ ),
-					vars = {}, tmp, i;
-
-				ps = ps[ 1 ].split( "],[" );
-				for ( i = ps.length - 1; i >= 0; i-- ) {
-					ps[ i ] = parseIntArray( ps[ i ].replace( /\[|\]/g, "" ).split( "," ) );
-				}
-
-				while ( ( tmp = varsRegex.exec( settings ) ) !== null ) {
-					vars[ tmp[ 1 ] ] = +tmp[ 2 ];
-				}
-
-				vars.loc = loc[ 1 ];
-				vars.ps = ps;
-				vars.lrun = parseIntArray( lrun[ 1 ].split( "," ) );
-
-				controller.settings = vars;
-			},
-			function() {
-				if ( controller.settings && controller.stations ) {
-					var ps = [], i;
-					for ( i = 0; i < controller.stations.maxlen; i++ ) {
-						ps.push( [ 0, 0 ] );
-					}
-					controller.settings.ps = ps;
-				}
-			} );
-	} else {
-		return sendToOS( "/jc?pw=" ).then(
-			function( settings ) {
-				if ( typeof settings !== "object" ) {
+	return sendToOS( "/jc?pw=" ).then(
+		function( settings ) {
+			if ( typeof settings !== "object" ) {
+				try {
+					settings = JSON.parse( settings );
+				} catch ( err ) {
+					var matchWTO = /,"wto":\{.*?\}/;
+					var wto = settings.match( matchWTO );
+					settings = settings.replace( matchWTO, "" );
 					try {
 						settings = JSON.parse( settings );
-					} catch ( err ) {
-						var matchWTO = /,"wto":\{.*?\}/;
-						var wto = settings.match( matchWTO );
-						settings = settings.replace( matchWTO, "" );
-						try {
-							settings = JSON.parse( settings );
-							handleCorruptedWeatherOptions( wto );
-						} catch ( e ) {
-							return false;
-						}
+						handleCorruptedWeatherOptions( wto );
+					} catch ( e ) {
+						return false;
 					}
 				}
+			}
 
-				if ( typeof settings.lrun === "undefined" ) {
-					settings.lrun = [ 0, 0, 0, 0 ];
-				}
+			if ( typeof settings.lrun === "undefined" ) {
+				settings.lrun = [ 0, 0, 0, 0 ];
+			}
 
-				// Update the current coordinates if the user's location is using them
-				if ( settings.loc.match( regex.gps ) ) {
-					var location = settings.loc.split( "," );
-					currentCoordinates = [ parseFloat( location[ 0 ] ), parseFloat( location[ 1 ] ) ];
-				}
+			// Update the current coordinates if the user's location is using them
+			if ( settings.loc.match( regex.gps ) ) {
+				var location = settings.loc.split( "," );
+				currentCoordinates = [ parseFloat( location[ 0 ] ), parseFloat( location[ 1 ] ) ];
+			}
 
-				controller.settings = settings;
-				callback();
-			},
-			function() {
-				if ( controller.settings && controller.stations ) {
-					var ps = [], i;
-					for ( i = 0; i < controller.stations.maxlen; i++ ) {
-						ps.push( [ 0, 0 ] );
-					}
-					controller.settings.ps = ps;
+			controller.settings = settings;
+			callback();
+		},
+		function() {
+			if ( controller.settings && controller.stations ) {
+				var ps = [], i;
+				for ( i = 0; i < controller.stations.maxlen; i++ ) {
+					ps.push( [ 0, 0 ] );
 				}
-			} );
-	}
+				controller.settings.ps = ps;
+			}
+		} );
 }
 
 function updateControllerStationSpecial( callback ) {
@@ -1639,12 +1182,6 @@ function checkConfigured( firstLoad ) {
 			currAuth = false;
 		}
 
-		if ( sites[ current ].is183 ) {
-			curr183 = true;
-		} else {
-			curr183 = false;
-		}
-
 		newLoad();
 	} );
 }
@@ -1681,13 +1218,8 @@ function submitNewUser( ssl, useAuth ) {
 	var ip = $.mobile.path.parseUrl( $( "#os_ip" ).val() ).hrefNoHash.replace( /https?:\/\//, "" ),
 		success = function( data, sites ) {
 			$.mobile.loading( "hide" );
-			var is183;
 
-			if ( ( typeof data === "string" && data.match( /var (en|sd)\s*=/ ) ) || ( typeof data.fwv === "number" && data.fwv === 203 ) ) {
-				is183 = true;
-			}
-
-			if ( data.fwv !== undefined || is183 === true ) {
+			if ( data.fwv !== undefined) {
 				var name = $( "#os_name" ).val(),
 					pw = $( "#os_pw" ).val(),
 					savePW = $( "#save_pw" ).is( ":checked" );
@@ -1723,11 +1255,6 @@ function submitNewUser( ssl, useAuth ) {
 					currAuthPass = sites[ name ].auth_pw;
 				} else {
 					currAuth = false;
-				}
-
-				if ( is183 === true ) {
-					sites[ name ].is183 = "1";
-					curr183 = true;
 				}
 
 				$( "#os_name,#os_ip,#os_pw,#os_auth_user,#os_auth_pw" ).val( "" );
@@ -3177,7 +2704,7 @@ function checkURLandUpdateWeather() {
 		updateWeather();
 	};
 
-	if ( controller.settings && controller.settings.wsp ) {
+	if ( controller.settings.wsp ) {
 		if ( controller.settings.wsp === "weather.opensprinkler.com" ) {
 			finish();
 			return;
@@ -4060,6 +3587,7 @@ function showOptions( expandItem ) {
 						break;
 					case "o18":
 					case "o37":
+						// #o15 - number of stations/boards
 						if ( parseInt( data ) > ( parseInt( page.find( "#o15" ).val() ) + 1 )  ) {
 							data = 0;
 						}
@@ -4274,7 +3802,7 @@ function showOptions( expandItem ) {
 		( typeof expandItem === "string" && expandItem === "station" ? " data-collapsed='false'" : "" ) + "><legend>" +
 		_( "Station Handling" ) + "</legend>";
 
-	if ( typeof controller.options.ext !== "undefined" ) {
+	if ( typeof controller.options.nstn !== "undefined" ) {
 
 		list += "<div class='ui-field-contain'><label for='o15' class='select'>" +
 			_( "Number of Stations" ) +
@@ -4282,8 +3810,8 @@ function showOptions( expandItem ) {
 				( controller.options.dexp + 8 ) + " " + _( "available" ) + ")</span>" : "" ) +
 			"</label><select data-mini='true' id='o15'>";
 
-		for ( i = 0; i <= ( controller.options.mexp || 5 ); i++ ) {
-			list += "<option " + ( ( controller.options.ext === i ) ? "selected" : "" ) + " value='" + i + "'>" + ( i + 1 ) + " " + _( "stations" ) +
+		for ( i = 0; i <= ( controller.options.mstn || 5 ); i++ ) {
+			list += "<option " + ( ( controller.options.nstn === i ) ? "selected" : "" ) + " value='" + i + "'>" + ( i + 1 ) + " " + _( "stations" ) +
 				"</option>";
 		}
 		list += "</select></div>";
@@ -4749,43 +4277,43 @@ function showOptions( expandItem ) {
 		}
 
 		if ( controller.options.mas ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "m" + i + "=255&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_rain === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "i" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_sn1 === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "j" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.ignore_sn2 === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "k" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.act_relay === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "a" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.stn_dis === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "d" + i + "=0&";
 			}
 		}
 
 		if ( typeof controller.stations.stn_seq === "object" ) {
-			for ( i = 0; i < controller.stations.snames.length; i++ ) {
+			for ( i = 0; i < controller.settings.nstn; i++ ) {
 				cs += "q" + i + "=255&";
 			}
 		}
@@ -5310,12 +4838,12 @@ var showHome = ( function() {
 		addCard = function( i ) {
 			var station = controller.stations.snames[ i ],
 				isScheduled = controller.settings.ps[ i ][ 0 ] > 0,
-				isRunning = controller.status[ i ] > 0,
+				isRunning = controller.status(i) > 0,
 				pname = isScheduled ? pidname( controller.settings.ps[ i ][ 0 ] ) : "",
 				rem = controller.settings.ps[ i ][ 1 ],
 				hasImage = sites[ currentSite ].images[ i ] ? true : false;
 
-			if ( controller.status[ i ] && rem > 0 ) {
+			if ( controller.status(i) && rem > 0 ) {
 				addTimer( i, rem );
 			}
 
@@ -5335,18 +4863,18 @@ var showHome = ( function() {
 			cards += "<span class='btn-no-border ui-btn ui-btn-icon-notext ui-icon-wifi card-icon special-station " +
 				( isStationSpecial( i ) ? "" : "hidden" ) + "'></span>";
 
-			cards += "<span class='btn-no-border ui-btn " + ( ( isStationMaster( i ) ) ? "ui-icon-master" : "ui-icon-gear" ) +
+				cards += "<span class='btn-no-border ui-btn " + ( ( isStationMaster( i ) ) ? "ui-icon-master" : "ui-icon-gear" ) +
 				" card-icon ui-btn-icon-notext station-settings' data-station='" + i + "' id='attrib-" + i + "' " +
-				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
-				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster ? ( "data-um='"     + ( ( controller.stations.masop      [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasMaster2 ? ( "data-um2='"   + ( ( controller.stations.masop2     [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasIR ? ( "data-ir='"         + ( ( controller.stations.ignore_rain[ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN1 ? ( "data-sn1='"       + ( ( controller.stations.ignore_sn1 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSN2 ? ( "data-sn2='"       + ( ( controller.stations.ignore_sn2 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasAR ? ( "data-ar='"         + ( ( controller.stations.act_relay  [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSD ? ( "data-sd='"         + ( ( controller.stations.stn_dis    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSequential ? ( "data-us='" + ( ( controller.stations.stn_seq    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
 				( hasGroup ? ( "data-grp='"     + controller.stations.stn_grp        [ i ] + "' " ) : "" ) +
-				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
+				( hasSpecial ? ( "data-hs='"    + ( ( controller.stations.stn_spe    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) + "' " ) : "" ) +
 				"></span>";
 
 			if ( !isStationMaster( i ) ) {
@@ -5776,9 +5304,9 @@ var showHome = ( function() {
 				names = {},
 				attrib, b, sid, s;
 
-			for ( sid = 0; sid < controller.stations.snames.length; sid++ ) {
+			for ( sid = 0; sid < controller.settings.nstn; sid++ ) {
 				attrib = page.find( "#attrib-" + sid );
-				b = sid / 8;
+				b = sid >> 3;
 				s = sid % 8;
 				if ( hasMaster ) {
 					if (master[ "m" + b ] === undefined)  master[ "m" + b ] = 0;
@@ -5820,14 +5348,15 @@ var showHome = ( function() {
 					group[ "g" + sid ] = attrib.data( "grp" );
 				}
 			}
-				// Only send the name of the station being updated
-				names[ "s" + id ] = page.find( "#station_" + id ).text();
 
-				if ( hasSpecial && attrib.data( "hs" ) ) {
-					special.st = attrib.data( "hs" );
-					special.sd = attrib.data( "specialData" );
-					special.sid = id;
-				}
+			// Only send the name of the station being updated
+			names[ "s" + id ] = page.find( "#station_" + id ).text().replace( /\s/g, "_" );;
+			attrib = page.find( "#attrib-" + id );
+			if ( hasSpecial && attrib.data( "hs" ) ) {
+				special.st = attrib.data( "hs" );
+				special.sd = attrib.data( "specialData" );
+				special.sid = id;
+			}
 
 
 			$.mobile.loading( "show" );
@@ -5939,7 +5468,7 @@ var showHome = ( function() {
 
 			for ( var i = 0; i < controller.stations.snames.length; i++ ) {
 				isScheduled = controller.settings.ps[ i ][ 0 ] > 0;
-				isRunning = controller.status[ i ] > 0;
+				isRunning = controller.status(i) > 0;
 				pname = isScheduled ? pidname( controller.settings.ps[ i ][ 0 ] ) : "";
 				rem = controller.settings.ps[ i ][ 1 ],
 				hasImage = sites[ currentSite ].images[ i ] ? true : false;
@@ -5975,16 +5504,16 @@ var showHome = ( function() {
 						card.find( ".station-settings" ).removeClass( "ui-icon-master" ).addClass( "ui-icon-gear" );
 					}
 					card.find( ".station-settings" ).data( {
-						um: hasMaster ?     ( ( controller.stations.masop      [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						um2: hasMaster2 ?   ( ( controller.stations.masop2     [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						ir: hasIR ?         ( ( controller.stations.ignore_rain[ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						sn1: hasSN1 ?       ( ( controller.stations.ignore_sn1 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						sn2: hasSN2 ?       ( ( controller.stations.ignore_sn2 [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						ar: hasAR ?         ( ( controller.stations.act_relay  [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						sd: hasSD ?         ( ( controller.stations.stn_dis    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
-						us: hasSequential ? ( ( controller.stations.stn_seq    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						um: hasMaster ?     ( ( controller.stations.masop      [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						um2: hasMaster2 ?   ( ( controller.stations.masop2     [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						ir: hasIR ?         ( ( controller.stations.ignore_rain[ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sn1: hasSN1 ?       ( ( controller.stations.ignore_sn1 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sn2: hasSN2 ?       ( ( controller.stations.ignore_sn2 [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						ar: hasAR ?         ( ( controller.stations.act_relay  [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						sd: hasSD ?         ( ( controller.stations.stn_dis    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
+						us: hasSequential ? ( ( controller.stations.stn_seq    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined,
 						grp: hasGroup ? controller.stations.stn_grp[ i ] : undefined,
-						hs: hasSpecial ?    ( ( controller.stations.stn_spe    [ i / 8 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined
+						hs: hasSpecial ?    ( ( controller.stations.stn_spe    [ i >> 3 ] & ( 1 << ( i % 8 ) ) ) ? 1 : 0 ) : undefined
 					} );
 
 					if ( !isStationMaster( i ) && ( isScheduled || isRunning ) ) {
@@ -5994,7 +5523,7 @@ var showHome = ( function() {
 
 							// Show the remaining time if it's greater than 0
 							line += " <span id='countdown-" + i + "' class='nobr'>(" + sec2hms( rem ) + " " + _( "remaining" ) + ")</span>";
-							if ( controller.status[ i ] ) {
+							if ( controller.status(i) ) {
 								addTimer( i, rem );
 							}
 						}
@@ -6090,7 +5619,7 @@ var showHome = ( function() {
 
 			var el = $( this ),
 				station = el.data( "station" ),
-				currentStatus = controller.status[ station ],
+				currentStatus = controller.status(station),
 				name = controller.stations.snames[ station ],
 				question;
 
@@ -6135,7 +5664,7 @@ var showHome = ( function() {
 					// Update local state until next device refresh occurs
 					controller.settings.ps[ station ][ 0 ] = 0;
 					controller.settings.ps[ station ][ 1 ] = 0;
-					controller.status[ i ] = 0;
+					controller.set_status(i, 0);
 
 					// Remove any timer associated with the station
 					delete timers[ "station-" + station ];
@@ -6316,16 +5845,16 @@ function isStationMaster( sid ) {
 }
 
 function isStationDisabled( sid ) {
-	return ( typeof controller.stations.stn_dis === "object" && ( controller.stations.stn_dis[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0 );
+	return ( typeof controller.stations.stn_dis === "object" && ( controller.stations.stn_dis[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) > 0 );
 }
 
 function isStationSpecial( sid ) {
-	return ( typeof controller.stations.stn_spe === "object" && ( controller.stations.stn_spe[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0 );
+	return ( typeof controller.stations.stn_spe === "object" && ( controller.stations.stn_spe[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) > 0 );
 }
 
 function isStationSequential( sid ) {
 	if ( typeof controller.stations.stn_seq === "object" ) {
-		return ( controller.stations.stn_seq[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) > 0;
+		return ( controller.stations.stn_seq[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) > 0;
 	} else {
 		return controller.options.seq;
 	}
@@ -6503,9 +6032,9 @@ function checkStatus() {
 
 	// Handle open stations
 	open = {};
-	for ( i = 0; i < controller.status.length; i++ ) {
-		if ( controller.status[ i ] && !isStationMaster( i ) ) {
-			open[ i ] = controller.status[ i ];
+	for ( i = 0; i < controller.status_sn.length; i++ ) {
+		if ( controller.status(i) && !isStationMaster( i ) ) {
+			open[ i ] = controller.status(i);
 		}
 	}
 
@@ -6539,7 +6068,7 @@ function checkStatus() {
 	// Handle a single station open
 	match = false;
 	for ( i = 0; i < controller.stations.snames.length; i++ ) {
-		if ( controller.settings.ps[ i ] && controller.settings.ps[ i ][ 0 ] && controller.status[ i ] && !isStationMaster( i ) ) {
+		if ( controller.settings.ps[ i ] && controller.settings.ps[ i ][ 0 ] && controller.status(i) && !isStationMaster( i ) ) {
 			match = true;
 			pid = controller.settings.ps[ i ][ 0 ];
 			pname = pidname( pid );
@@ -6728,7 +6257,7 @@ var getManual = ( function() {
 				var item = listitems.eq( currPos ).find( "a" );
 
 				if ( controller.options.mas ) {
-					if ( controller.status[ controller.options.mas - 1 ] ) {
+					if ( controller.status(controller.options.mas - 1) ) {
 						listitems.eq( controller.options.mas - 1 ).addClass( "green" );
 					} else {
 						listitems.eq( controller.options.mas - 1 ).removeClass( "green" );
@@ -6737,7 +6266,7 @@ var getManual = ( function() {
 
 				item.text( controller.stations.snames[ currPos ] );
 
-				if ( controller.status[ currPos ] ) {
+				if ( controller.status(currPos) ) {
 					item.removeClass( "yellow" ).addClass( "green" );
 				} else {
 					item.removeClass( "green yellow" );
@@ -6760,7 +6289,7 @@ var getManual = ( function() {
 				return false;
 			}
 
-			if ( controller.status[ currPos ] ) {
+			if ( controller.status(currPos) ) {
 				if ( checkOSPiVersion( "2.1" ) ) {
 					dest = "/sn?sid=" + sid + "&set_to=0&pw=";
 				} else {
@@ -6829,10 +6358,10 @@ var getManual = ( function() {
 
 		$.each( controller.stations.snames, function( i, station ) {
 			if ( isStationMaster( i ) ) {
-				list += "<li data-icon='false' class='center" + ( ( controller.status[ i ] ) ? " green" : "" ) +
+				list += "<li data-icon='false' class='center" + ( ( controller.status(i) ) ? " green" : "" ) +
 					( isStationDisabled( i ) ? " station-hidden' style='display:none" : "" ) + "'>" + station + " (" + _( "Master" ) + ")</li>";
 			} else {
-				list += "<li data-icon='false'><a class='mm_station center" + ( ( controller.status[ i ] ) ? " green" : "" ) +
+				list += "<li data-icon='false'><a class='mm_station center" + ( ( controller.status(i) ) ? " green" : "" ) +
 					( isStationDisabled( i ) ? " station-hidden' style='display:none" : "" ) + "'>" + station + "</a></li>";
 			}
 		} );
@@ -7522,7 +7051,7 @@ var getPreview = ( function() {
 			( simt + start + ( controller.options.tz - 48 ) * 900 <= controller.settings.rdst * 1000 ) ||
 			controller.options.urs === 1 && controller.settings.rs === 1 ) &&
 			( typeof controller.stations.ignore_rain === "object" &&
-				( controller.stations.ignore_rain[ parseInt( sid / 8 ) ] & ( 1 << ( sid % 8 ) ) ) === 0 ) ) {
+				( controller.stations.ignore_rain[ sid >> 3 ] & ( 1 << ( sid % 8 ) ) ) === 0 ) ) {
 
 			className = "delayed";
 		}
@@ -8494,7 +8023,7 @@ function resetAllOptions( callback ) {
 		var co;
 
 		if ( isOSPi() ) {
-			co = "otz=32&ontp=1&onbrd=0&osdt=0&omas=0&omton=0&omtoff=0&orst=1&owl=100&orlp=0&ouwt=0&olg=1&oloc=Boston,MA";
+			co = "otz=32&ontp=1&onstn=0&osdt=0&omas=0&omton=0&omtoff=0&orst=1&owl=100&orlp=0&ouwt=0&olg=1&oloc=Boston,MA";
 		} else {
 			co = "o1=32&o2=1&o3=1&o12=80&o13=0&o15=0&o17=0&o18=0&o19=0&o20=0&o22=1&o23=100&o26=0&o27=110&o28=100&o29=15&" +
 				"o30=0&o31=0&o32=50&o33=97&o34=210&o35=169&o36=1&o37=0&o38=0&o39=0&loc=Boston,MA&wto=%22key%22%3A%22%22";
@@ -9763,7 +9292,7 @@ function importConfig( data ) {
 			}
 		} else if ( !isPi && typeof data.options.fwv === "number" && data.options.fwv < 211 && !checkOSVersion( 211 ) ) {
 			var bid;
-			for ( bid = 0; bid < data.settings.nbrd; bid++ ) {
+			for ( bid = 0; bid < data.settings.nstn; bid++ ) {
 				cs += "&q" + bid + "=" + ( data.options.seq === 1 ? 255 : 0 );
 			}
 		}
@@ -9963,8 +9492,8 @@ var showAbout = ( function() {
 
 // OpenSprinkler controller methods
 function isRunning() {
-	for ( var i = 0; i < controller.status.length; i++ ) {
-		if ( controller.status[ i ] > 0 && controller.settings.ps[ i ][ 0 ] > 0 ) {
+	for ( var i = 0; i < controller.status_sn.length; i++ ) {
+		if ( controller.status(i) > 0 && controller.settings.ps[ i ][ 0 ] > 0 ) {
 			return i;
 		}
 	}
@@ -12285,8 +11814,8 @@ function getDurationText( time ) {
 // Convert seconds into (HH:)MM:SS format. HH is only reported if greater than 0.
 function sec2hms( diff ) {
 	var str = "";
-	var hours = Math.max( 0, parseInt( diff / 3600 ) % 24 );
-	var minutes = Math.max( 0, parseInt( diff / 60 ) % 60 );
+	var hours = Math.max( 0, Math.floor( diff / 3600 ) % 24 );
+	var minutes = Math.max( 0, Math.floor( diff / 60 ) % 60 );
 	var seconds = diff % 60;
 	if ( hours ) {
 		str += pad( hours ) + ":";
@@ -12299,10 +11828,10 @@ function sec2dhms( diff ) {
 	var isNegative = ( diff < 0 ) ? -1 : 1;
 	diff = Math.abs( diff );
 	return {
-		"days": Math.max( 0, parseInt( diff / 86400 ) ) * isNegative,
-		"hours": Math.max( 0, parseInt( diff % 86400 / 3600 ) ) * isNegative,
-		"minutes": Math.max( 0, parseInt( ( diff % 86400 ) % 3600 / 60 ) ) * isNegative,
-		"seconds": Math.max( 0, parseInt( ( diff % 86400 ) % 3600 % 60 ) ) * isNegative
+		"days": Math.max( 0, Math.floor( diff / 86400 ) ) * isNegative,
+		"hours": Math.max( 0, Math.floor( diff % 86400 / 3600 ) ) * isNegative,
+		"minutes": Math.max( 0, Math.floor( ( diff % 86400 ) % 3600 / 60 ) ) * isNegative,
+		"seconds": Math.max( 0, Math.floor( ( diff % 86400 ) % 3600 % 60 ) ) * isNegative
 	};
 }
 
@@ -12337,9 +11866,8 @@ function isControllerConnected() {
 		$.isEmptyObject( controller.options ) ||
 		$.isEmptyObject( controller.programs ) ||
 		$.isEmptyObject( controller.settings ) ||
-		$.isEmptyObject( controller.status ) ||
+		$.isEmptyObject( controller.status_sn ) ||
 		$.isEmptyObject( controller.stations ) ) {
-
 			return false;
 	}
 

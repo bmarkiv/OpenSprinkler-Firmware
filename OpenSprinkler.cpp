@@ -103,7 +103,7 @@ const char iopt_json_names[] PROGMEM =
 	"hp0\0\0"
 	"hp1\0\0"
 	"hwv\0\0"
-	"ext\0\0"
+	"nstn\0"
 	"seq\0\0"
 	"sdt\0\0"
 	"mas\0\0"
@@ -314,7 +314,7 @@ const byte iopt_max[] PROGMEM = {
 /** Integer option values (stored in RAM) */
 byte OpenSprinkler::iopts[] = {
 	OS_FW_VERSION, // firmware version
-	28, // default time zone: GMT-5
+	20, // default time zone: GMT-5
 	1,	// 0: disable NTP sync, 1: enable NTP sync
 	1,	// 0: use static ip, 1: use dhcp
 	0,	// this and next 3 bytes define static ip
@@ -354,7 +354,7 @@ byte OpenSprinkler::iopts[] = {
 	0,
 	0,
 	0,
-	1,	// enable logging: 0: disable; 1: enable.
+	0,	// enable logging: 0: disable; 1: enable.
 	0,	// index of master2. 0: no master2 station
 	120,// master2 on adjusted time
 	120,// master2 off adjusted time
@@ -1818,7 +1818,8 @@ void OpenSprinkler::factory_reset() {
 		os.stationAttributes.a.d[i] = *pdata;
 	}
 	
-	os.stationAttributes.attribs_load(); // load and repackage attrib bits (for backward compatibility)
+	os.stationAttributes.a.to_attrib();
+	os.stationAttributes.stations_save();
 	
 	// 3. write non-volatile controller status
 	nvdata.reboot_cause = REBOOT_CAUSE_RESET;
@@ -1849,7 +1850,7 @@ void OpenSprinkler::options_setup() {
 		wifi_ssid = sopt_load(SOPT_STA_SSID);
 		wifi_pass = sopt_load(SOPT_STA_PASS);
 		#endif
-		os.stationAttributes.attribs_load();
+		os.stationAttributes.stations_load();
 	}
 
 #if defined(ARDUINO)	// handle AVR buttons
@@ -1976,6 +1977,7 @@ void OpenSprinkler::iopts_load() {
 
 /** Save integer options to file */
 void OpenSprinkler::iopts_save() {
+	nstations = iopts[IOPT_STATIONS]+1;
 	file_write_block(IOPTS_FILENAME, iopts, 0, NUM_IOPTS);
 }
 

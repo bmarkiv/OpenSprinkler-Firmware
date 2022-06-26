@@ -89,8 +89,10 @@ public:
 
 	static byte iopts[]; // integer options
 	static const char*sopts[]; // string options
-	static byte station_bits[];			// station activation bits. each byte corresponds to a board (8 stations)
-																	// first byte-> master controller, second byte-> ext. board 1, and so on
+	static byte station_bits[];	// station activation bits. each byte corresponds to a board (8 stations)
+								// first byte-> master controller, second byte-> ext. board 1, and so on
+	static byte attribs() {return nstations/8 + (nstations % 8 ? 1 : 0);}
+	static byte check_bit(const byte* bits, byte i) { return (bits[i>>3] & (1<<(i&0x07))) ? 1 : 0; }
 	
 	static StationAttributes stationAttributes;
 

@@ -183,52 +183,28 @@ byte findKeyVal (const char *str,char *strbuf, uint16_t maxlen,const char *key,b
 	uint16_t i=0;
 	const char *kp;
 	kp=key;
-#if defined(ARDUINO)	
-	if (key_in_pgm) {
-		// key is in program memory space
-		while(*str &&  *str!=' ' && *str!='\n' && found==0){
-			if (*str == pgm_read_byte(kp)){
-				kp++;
-				if (pgm_read_byte(kp) == '\0'){
-					str++;
-					kp=key;
-					if (*str == '='){
-						found=1;
-					}
-				}
-			} else {
+
+	while(*str &&  *str!=' ' && *str!='\n' && found==0){
+		if (*str == *kp){
+			kp++;
+			if (*kp == '\0'){
+				str++;
 				kp=key;
-			}
-			str++;
-		}
-	}
-	else
-#endif
-	// for Linux, key_in_pgm is always false
-	{
-		while(*str &&  *str!=' ' && *str!='\n' && found==0){
-			if (*str == *kp){
-				kp++;
-				if (*kp == '\0'){
-					str++;
-					kp=key;
-					if (*str == '='){
-						found=1;
-					}
+				if (*str == '='){
+					found=1;
 				}
-			} else {
-				kp=key;
 			}
-			str++;
+		} else {
+			kp=key;
 		}
+		str++;
 	}
+
 	if (found==1){
 		// copy the value to a buffer and terminate it with '\0'
 		while(*str &&  *str!=' ' && *str!='\n' && *str!='&' && i<maxlen-1){
-			*strbuf=*str;
+			*strbuf++=*str++;
 			i++;
-			str++;
-			strbuf++;
 		}
 		if (!(*str) || *str == ' ' || *str == '\n' || *str == '&') {
 			*strbuf = '\0';
@@ -459,7 +435,7 @@ boolean check_password(char *p)
 void server_json_stations_attrib(const char* name, byte *attrib)
 {
 	bfill.emit_p(PSTR("\"$F\":["), name);
-	int attribs = os.nstations/8; if (attribs == 0) attribs = 1;
+	byte attribs = os.attribs();
 	for(byte i=0;i<attribs;i++) {
 		bfill.emit_p(PSTR("$D"), attrib[i]);
 		if(i!=attribs-1)
@@ -484,15 +460,13 @@ void server_json_stations_main() {
 		bfill.emit_p(PSTR("\"$S\""), os.get_station_name(sid));
 		if(sid!=os.nstations-1)
 			bfill.emit_p(PSTR(","));
-		if (available_ether_buffer() <=0 ) {
-			send_packet();
-		}
 	}
 	bfill.emit_p(PSTR("],\"maxlen\":$D}"), STATION_NAME_SIZE);
 }
 
 /** Output stations data */
 void server_json_stations() {
+	DEBUG_LOGF("server_json_stations: %s\n", "jn");
 #if defined(ESP8266)
 	if(!process_password()) return;
 	rewind_ether_buffer();
@@ -504,6 +478,7 @@ void server_json_stations() {
 
 /** Output station special attribute */
 void server_json_station_special() {
+	DEBUG_LOGF("server_json_station_special: %s\n", "je");
 
 #if defined(ESP8266)
 	if(!process_password()) return;
@@ -521,9 +496,6 @@ void server_json_station_special() {
 			else {comma=1;}
 			bfill.emit_p(PSTR("\"$D\":{\"st\":$D,\"sd\":\"$S\"}"), sid, data->type, data->sped);
 		}
-		if (available_ether_buffer() <=0 ) {
-			send_packet();
-		}		
 	}
 	bfill.emit_p(PSTR("}"));
 	handle_return(HTML_OK);
@@ -534,7 +506,7 @@ void server_change_stations_attrib(char *p, char header, byte *attrib)
 {
 	char tbuf2[5] = {0, 0, 0, 0, 0};
 	tbuf2[0]=header;
-	int attribs = os.nstations/8; if (attribs == 0) attribs = 1;
+	int attribs = os.attribs();
 	for(byte i=0;i<attribs;i++) {
 		itoa(i, tbuf2+1, 10);
 		if(findKeyVal(p, tmp_buffer, TMP_BUFFER_SIZE, tbuf2)) {
@@ -556,7 +528,7 @@ void server_change_stations_attrib(char *p, char header, byte *attrib)
  * p?: station special flag bit field
  */
 void server_change_stations() {
-	DEBUG_PRINTLN(F("server_change_stations..."));
+	DEBUG_LOGF("server_change_stations ...%s\n", "cs");
 	int server_change = 0;
 #if defined(ESP8266)
 	char* p = NULL;
@@ -566,7 +538,6 @@ void server_change_stations() {
 #else
 	char* p = get_buffer;
 #endif
-	DEBUG_PRINTF("server_change_stations %d\n", server_change++);
 	byte sid;
 	char tbuf2[5] = {'s', 0, 0, 0, 0};
 	// process station names
@@ -577,30 +548,26 @@ void server_change_stations() {
 			strcpy(os.stationAttributes.a.d[sid].name, tmp_buffer);
 		}
 	}
-	DEBUG_PRINTF("server_change_stations %d\n", server_change++);
-	server_change_stations_attrib(p, 'm', os.stationAttributes.a.attrib_mas); // master1
+	server_change_stations_attrib(p, 'm', os.stationAttributes.a.attrib_mas);  // master1
 	server_change_stations_attrib(p, 'i', os.stationAttributes.a.attrib_igrd); // ignore rain delay
-	server_change_stations_attrib(p, 'j', os.stationAttributes.a.attrib_igs); // ignore sensor1
+	server_change_stations_attrib(p, 'j', os.stationAttributes.a.attrib_igs);  // ignore sensor1
 	server_change_stations_attrib(p, 'k', os.stationAttributes.a.attrib_igs2); // ignore sensor2
 	server_change_stations_attrib(p, 'n', os.stationAttributes.a.attrib_mas2); // master2
-	server_change_stations_attrib(p, 'd', os.stationAttributes.a.attrib_dis); // disable
-	server_change_stations_attrib(p, 'q', os.stationAttributes.a.attrib_seq); // sequential
-	server_change_stations_attrib(p, 'p', os.stationAttributes.a.attrib_spe); // special
+	server_change_stations_attrib(p, 'd', os.stationAttributes.a.attrib_dis);  // disable
+	server_change_stations_attrib(p, 'q', os.stationAttributes.a.attrib_seq);  // sequential
+	server_change_stations_attrib(p, 'p', os.stationAttributes.a.attrib_spe);  // special
 	os.stationAttributes.a.from_attrib();
-	DEBUG_PRINTF("server_change_stations %d\n", server_change++);
 
 	/* handle special data */
 	if(findKeyVal(p, tmp_buffer, TMP_BUFFER_SIZE, PSTR("sid"), true)) {
 		sid = atoi(tmp_buffer);
 		if(sid<0 || sid>os.nstations) {
-			DEBUG_PRINTLN("server_change_stations HTML_DATA_OUTOFBOUND: sid<0 || sid>os.nstations");
+			DEBUG_LOGF("server_change_stations HTML_DATA_OUTOFBOUND: sid<0 || sid>os.nstations%s\n", "");
 			handle_return(HTML_DATA_OUTOFBOUND);
 		}
 		
-	DEBUG_PRINTF("server_change_stations %d\n", server_change++);
 		if(findKeyVal(p, tmp_buffer, TMP_BUFFER_SIZE, PSTR("st"), true) &&
 			 findKeyVal(p, tmp_buffer+1, TMP_BUFFER_SIZE-1, PSTR("sd"), true)) {
-	DEBUG_PRINTF("server_change_stations %d\n", server_change++);
 			tmp_buffer[0]-='0';
 			tmp_buffer[STATION_SPECIAL_DATA_SIZE] = 0;
 
@@ -616,7 +583,7 @@ void server_change_stations() {
 					if (gpioList[i] == gpio) found = true;
 				}
 				if (!found || activeState > 1) {
-					DEBUG_PRINTLN("server_change_stations HTML_DATA_OUTOFBOUND: !found || activeState > 1");
+					DEBUG_LOGF("server_change_stations HTML_DATA_OUTOFBOUND: !found || activeState > 1%s\n", "");
 					handle_return(HTML_DATA_OUTOFBOUND);
 				}
 					
@@ -627,23 +594,23 @@ void server_change_stations() {
 					urlDecode(tmp_buffer + 1);
 				#endif
 				if (strlen(tmp_buffer+1) > sizeof(HTTPStationData)) {
-					DEBUG_PRINTLN("server_change_stations HTML_DATA_OUTOFBOUND: strlen(tmp_buffer+1) > sizeof(HTTPStationData)");
+					DEBUG_LOGF("server_change_stations HTML_DATA_OUTOFBOUND: strlen(tmp_buffer+1) > sizeof(HTTPStationData)%s\n", "");
 					handle_return(HTML_DATA_OUTOFBOUND);
 				}
 			}
+
 			// write spe data
 			os.stationAttributes.a.d[sid].type = tmp_buffer[0];
 			memcpy(os.stationAttributes.a.d[sid].sped, tmp_buffer+1, STATION_SPECIAL_DATA_SIZE);
 		} else {
-			DEBUG_PRINTLN("server_change_stations HTML_DATA_MISSING");
+			DEBUG_LOGF("server_change_stations HTML_DATA_MISSING%s\n", "");
 			handle_return(HTML_DATA_MISSING);
 		}
 	}
-	DEBUG_PRINTF("server_change_stations attribs_save 1 %d\n", server_change++);
-	os.stationAttributes.attribs_save();
-	DEBUG_PRINTF("server_change_stations attribs_save 2 %d\n", server_change++);
+
+	os.stationAttributes.stations_save();
 	
-	DEBUG_PRINTLN(F("server_change_stations - done"));
+	DEBUG_LOGF("server_change_stations - done%s\n", "");
 	handle_return(HTML_SUCCESS);
 }
 
@@ -673,6 +640,7 @@ void manual_start_program(byte, byte);
  * uwt: use weather (i.e. watering percentage)
  */
 void server_manual_program() {
+	DEBUG_LOGF("server_manual_program: %s\n", "mp");
 #if defined(ESP8266)
 	char* p = NULL;
 	if(!process_password()) return;
@@ -711,6 +679,7 @@ void server_manual_program() {
  * t:  station water time
  */
 void server_change_runonce() {
+	DEBUG_LOGF("server_change_runonce: %s\n", "cr");
 #if defined(ESP8266)
 	char* p = NULL;
 	if(!process_password()) return;
@@ -747,7 +716,7 @@ void server_change_runonce() {
 
 		// if non-zero duration is given
 		// and if the station has not been disabled
-		if (dur>0 && !(os.stationAttributes.a.attrib_dis[sid])) {
+		if (dur>0 && !os.check_bit(os.stationAttributes.a.attrib_dis, sid)) {
 			RuntimeQueueStruct *q = pd.enqueue();
 			if (q) {
 				q->st = 0;
@@ -775,6 +744,7 @@ void server_change_runonce() {
  * pid:program index (-1 will delete all programs)
  */
 void server_delete_program() {
+	DEBUG_LOGF("server_delete_program: %s\n", "dp");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -806,6 +776,7 @@ void server_delete_program() {
  * pid: program index (must be 1 or larger, because we can't move up program 0)
 */
 void server_moveup_program() {
+	DEBUG_LOGF("server_moveup_program: %s\n", "up");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -840,6 +811,7 @@ void server_moveup_program() {
 */
 const char _str_program[] PROGMEM = "Program ";
 void server_change_program() {
+	DEBUG_LOGF("server_change_program: %s\n", "cp");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -1006,11 +978,12 @@ void server_json_options_main() {
 			bfill.emit_p(PSTR(","));
 	}
 
-	bfill.emit_p(PSTR(",\"dexp\":$D,\"mexp\":$D,\"hwt\":$D}"), os.detect_exp(), MAX_NUM_STATIONS, os.hw_type);
+	bfill.emit_p(PSTR(",\"dexp\":$D,\"mstn\":$D,\"hwt\":$D}"), -1, MAX_NUM_STATIONS, os.hw_type);
 }
 
 /** Output Options */
 void server_json_options() {
+	DEBUG_LOGF("server_json_options: %s\n", "jo");
 #if defined(ESP8266)
 	if(!process_password(true)) return;
 	rewind_ether_buffer();
@@ -1064,6 +1037,7 @@ void server_json_programs_main() {
 
 /** Output program data */
 void server_json_programs() {
+	DEBUG_LOGF("server_json_programs: %s\n", "jp");
 #if defined(ESP8266)
 	if(!process_password()) return;
 	rewind_ether_buffer();
@@ -1076,6 +1050,7 @@ void server_json_programs() {
 
 /** Output script url form */
 void server_view_scripturl() {
+	DEBUG_LOGF("server_view_scripturl: %s\n", "su");
 #if defined(ESP8266)
 	// no authenticaion needed
 	rewind_ether_buffer();
@@ -1089,7 +1064,7 @@ void server_view_scripturl() {
 void server_json_controller_main() {
 	byte bid, sid;
 	ulong curr_time = os.now_tz();
-	bfill.emit_p(PSTR("\"devt\":$L,\"nbrd\":$D,\"en\":$D,\"sn1\":$D,\"sn2\":$D,\"rd\":$D,\"rdst\":$L,"
+	bfill.emit_p(PSTR("\"devt\":$L,\"nstn\":$D,\"en\":$D,\"sn1\":$D,\"sn2\":$D,\"rd\":$D,\"rdst\":$L,"
 										"\"sunrise\":$D,\"sunset\":$D,\"eip\":$L,\"lwc\":$L,\"lswc\":$L,"
 										"\"lupt\":$L,\"lrbtc\":$D,\"lrun\":[$D,$D,$D,$L],"),
 							curr_time,
@@ -1144,12 +1119,16 @@ void server_json_controller_main() {
 		bfill.emit_p(PSTR("\"flcrt\":$L,\"flwrt\":$D,"), os.flowcount_rt, FLOWCOUNT_RT_WINDOW);
 	}
 	
-	bfill.emit_p(PSTR("\"sbits\":["));
 	// print sbits
-	for(sid=0;sid<os.nstations;sid++)
-		bfill.emit_p(PSTR("$D,"), os.station_bits[sid]);
-	bfill.emit_p(PSTR("0],\"ps\":["));
+	bfill.emit_p(PSTR("\"sbits\":["));
+	byte attribs = os.attribs();
+	for(byte a=0;a<attribs;a++){
+		bfill.emit_p(PSTR("$D"), os.station_bits[a]);
+		bfill.emit_p(a<attribs-1?PSTR(","):PSTR("]"));
+	}
+
 	// print ps
+	bfill.emit_p(PSTR(",\"ps\":["));
 	for(sid=0;sid<os.nstations;sid++) {
 		unsigned long rem = 0;
 		byte qid = pd.station_qid[sid];
@@ -1170,6 +1149,7 @@ void server_json_controller_main() {
 
 /** Output controller variables in json */
 void server_json_controller() {
+	DEBUG_LOGF("server_json_controller: %s\n", "jc");
 #if defined(ESP8266)
 	if(!process_password()) return;
 	rewind_ether_buffer();
@@ -1220,8 +1200,8 @@ void server_home() {
  * ap:	reset to ap (ESP8266 only)
  * update: launch update script (for OSPi/OSBo/Linux only)
  */
-void server_change_values()
-{
+void server_change_values(){
+	DEBUG_LOGF("server_change_values: %s\n", "cv");
 #if defined(ESP8266)
 	char *p = NULL;
 	extern uint32_t reboot_timer;
@@ -1307,6 +1287,7 @@ void string_remove_space(char *src) {
  * jsp: Javascript path
  */
 void server_change_scripturl() {
+	DEBUG_LOGF("server_change_scripturl: %s\n", "cu");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -1344,8 +1325,8 @@ void server_change_scripturl() {
  * loc: location
  * ttt: manual time (applicable only if ntp=0)
  */
-void server_change_options()
-{
+void server_change_options(){
+	DEBUG_LOGF("server_change_options: %s\n", "co");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -1511,6 +1492,7 @@ void server_change_options()
  * cpw: confirm new password
  */
 void server_change_password() {
+	DEBUG_LOGF("server_change_password: %s\n", "sp");
 #if defined(DEMO)
 	handle_return(HTML_SUCCESS);	// do not allow chnaging password for demo
 	return;
@@ -1539,21 +1521,20 @@ void server_change_password() {
 
 void server_json_status_main() {
 	bfill.emit_p(PSTR("\"sn\":["));
-	byte sid;
-
-	for (sid=0;sid<os.nstations;sid++) {
-		bfill.emit_p(PSTR("$D"), os.station_bits[sid]);
-		if(sid!=os.nstations-1) bfill.emit_p(PSTR(","));
+	byte attribs = os.attribs();
+	for(byte a=0;a<attribs;a++){
+		bfill.emit_p(PSTR("$D"), os.station_bits[a]);
+		bfill.emit_p(a<attribs-1?PSTR(","):PSTR("]"));
 	}
-	bfill.emit_p(PSTR("],\"nstations\":$D}"), os.nstations);
+
+	bfill.emit_p(PSTR(",\"nstations\":$D}"), os.nstations);
 }
 
 /** Output station status */
-void server_json_status()
-{
+void server_json_status(){
+	DEBUG_LOGF("server_json_status: %s\n", "js");
 #if defined(ESP8266)
 	if(!process_password()) return;
-	rewind_ether_buffer();
 #endif
 	print_json_header();
 	server_json_status_main();
@@ -1570,6 +1551,7 @@ void server_json_status()
  * t:  timer (required if en=1)
  */
 void server_change_manual() {
+	DEBUG_LOGF("server_change_manual: %s\n", "cm");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -1664,7 +1646,7 @@ int file_fgets(File file, char* buf, int maxsize) {
  *				if unspecified, output all records
  */
 void server_json_log() {
-
+	DEBUG_LOGF("server_json_log: %s\n", "jl");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -1802,6 +1784,7 @@ void server_json_log() {
  * if day=all: delete all log files)
  */
 void server_delete_log() {
+	DEBUG_LOGF("server_delete_log: %s\n", "dl");
 #if defined(ESP8266)
 	char *p = NULL;
 	if(!process_password()) return;
@@ -1821,6 +1804,7 @@ void server_delete_log() {
 
 /** Output all JSON data, including jc, jp, jo, js, jn */
 void server_json_all() {
+	DEBUG_LOGF("server_json_all: %s\n", "ja");
 #if defined(ESP8266)
 	if(!process_password(true)) return;
 	rewind_ether_buffer();
@@ -1854,6 +1838,7 @@ static int freeHeap () {
 
 #if defined(ARDUINO)
 void server_json_debug() {
+	DEBUG_LOGF("server_json_debug: %s\n", "db");
   rewind_ether_buffer();
   print_json_header();
   bfill.emit_p(PSTR("\"date\":\"$S\",\"time\":\"$S\",\"heap\":$D"), __DATE__, __TIME__,
@@ -1929,7 +1914,7 @@ URLHandler urls[] = {
 	server_change_scripturl,	// cu
 	server_json_all,			// ja
 #if defined(ARDUINO)  
-  server_json_debug,			// db
+    server_json_debug,			// db
 #endif	
 };
 
@@ -2089,7 +2074,6 @@ void handle_web_request(char *p) {
 	char *dat = com+3;
 
 	if(com[0]==' ') {
-		DEBUG_LOGF("handle_web_request: %s\n", "/");
 		server_home_("/");	// home page handler
 		send_packet(true);
 	} else {
@@ -2102,7 +2086,6 @@ void handle_web_request(char *p) {
 		for(i=0;i<sizeof(urls)/sizeof(URLHandler);i++) {
 			if(pgm_read_byte(_url_keys+2*i)==com[0]
 			 &&pgm_read_byte(_url_keys+2*i+1)==com[1]) {
-				DEBUG_LOGF("handle_web_request: %c%c\n", com[0], com[1]);
 				// check password
 				int ret = HTML_UNAUTHORIZED;
 

@@ -25,26 +25,16 @@ elif [ "$1" == "app" ]; then
 	cat js/jquery.js  > data/js/app.js
 	cat js/libs.js   >> data/js/app.js
 	cat js/hasher.js >> data/js/app.js
-	cat js/map.js    >> data/js/app.js
 	cat js/main.js   >> data/js/app.js
 
 
 	exit 0	
 elif [ "$1" == "64" ]; then
-	CPLUS_INCLUDE_PATH="/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/cores/esp8266"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/variants/nodemcu"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/libraries/Wire"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/libraries/SPI"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/libraries/Ethernet/src"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lwip2/include"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/Documents/Arduino/OpenSprinkler/.pio/libdeps/esp12e/rc-switch"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/Documents/Arduino/OpenSprinkler/.pio/libdeps/esp12e/PubSubClient/src"
-	CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/mnt/c/Users/borys/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WebServer/src"
-	CPLUS_INCLUDE_PATH=""
-	export CPLUS_INCLUDE_PATH
+	echo "Building app.js..."
+	cat js/jquery.js  > data/js/app.js
+	cat js/libs.js   >> data/js/app.js
+	cat js/main.js   >> data/js/app.js	
+	rm *.dat
 	g++ -g -std=c++11 -o OpenSprinkler -D_GLIBCXX_GCC_GTHR_POSIX_H -D_PTHREAD_H -DLWIP_FEATURES=1 -DLWIP_OPEN_SRC -DLWIP_IPV6=0 -DTCP_MSS=536 -DESP8266_ -DF_CPU=1000000000L -DARDUINO_=150 -DDEBUG -DDEMO main.cpp OpenSprinkler.cpp program.cpp opensprinkler_server.cpp utils.cpp weather.cpp gpio.cpp etherport.cpp mqtt.cpp -lpthread -lmosquitto
 	exit 0
 else

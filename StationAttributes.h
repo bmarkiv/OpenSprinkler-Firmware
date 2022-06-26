@@ -81,7 +81,7 @@ struct ConStatus {
 };
 
 struct StationAttributes_ {
-    StationData d   [MAX_NUM_STATIONS/8];
+    StationData d   [MAX_NUM_STATIONS];
 
     byte attrib_mas [MAX_NUM_STATIONS/8];
     byte attrib_igs [MAX_NUM_STATIONS/8];
@@ -149,11 +149,12 @@ public:
         strcpy(tmp, a.d[sid].name);
 	}
 
-	void attribs_save() {
+	void stations_save() {
         file_write_block(STATIONS_FILENAME, &a, 0, sizeof(a));
 	}
 
-	void attribs_load() {
+	void stations_load() {
         file_read_block(STATIONS_FILENAME, &a, 0, sizeof(a));
+		a.to_attrib();
     }
 };
