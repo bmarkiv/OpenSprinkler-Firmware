@@ -126,7 +126,7 @@ typedef unsigned long ulong;
 #define LED_FAST_BLINK 100
 #define LED_SLOW_BLINK 500
 
-#define MAX_EXT_BOARDS      1
+#define MAX_EXT_BOARDS      2
 #define MAX_NUM_STATIONS   24   // maximum number of stations
 #define STATION_NAME_SIZE  32   // maximum number of characters in each station name
 #define MAX_SOPTS_SIZE    160   // maximum string option size
@@ -294,10 +294,10 @@ enum {
 	#define EXP_I2CADDR_BASE 0x24 // base of expander I2C address
 	#define LCD_I2CADDR      0x3C // 128x64 OLED display I2C address
 
-	#define PIN_CURR_SENSE    A0
-	#define PIN_FREE_LIST     {} // no free GPIO pin at the moment
+	#define PIN_CURR_SENSE   A0
+	#define PIN_FREE_LIST    {0,12,13,14,15}  // free GPIO pins
 
-	#define PIN_ETHER_CS       16 // ENC28J60 CS (chip select pin) is 16 on OS 3.2.
+	#define PIN_ETHER_CS     16 // ENC28J60 CS (chip select pin) is 16 on OS 3.2.
 
 	/* To accommodate different OS30 versions, we use software defines pins */ 
 	extern byte PIN_BUTTON_1;
@@ -408,7 +408,7 @@ enum {
 	#define PIN_SENSOR1			0
 	#define PIN_SENSOR2			0
 	#define PIN_RFTX     0
-	#define PIN_FREE_LIST	{}
+	#define PIN_FREE_LIST           {2,3,5,6,7,8,9,10,11,12,13,14,16,18,19,20,21,23,24,25,26}  // free GPIO pins
 #endif
 
 #if defined(ENABLE_DEBUG) /** Serial debug functions */

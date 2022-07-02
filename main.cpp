@@ -885,8 +885,8 @@ void do_loop()
 				}
 
 				// in case some options have changed while executing the program
-				os.status.mas = os.iopts[IOPT_MASTER_STATION]; // update master station
-				os.status.mas2= os.iopts[IOPT_MASTER_STATION_2]; // update master2 station
+				os.status.mas = os.iopts[IOPT_MASTER_STATION  ] ? 1 : 0; // update master station
+				os.status.mas2= os.iopts[IOPT_MASTER_STATION_2] ? 1 : 0; // update master2 station
 			}
 		}//if_some_program_is_running
 

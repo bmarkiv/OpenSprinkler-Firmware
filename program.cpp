@@ -45,7 +45,7 @@ void ProgramData::init() {
 }
 
 void ProgramData::reset_runtime() {
-	memset(station_qid, 0xFF, MAX_NUM_STATIONS);	// reset station qid to 0xFF
+	memset(station_qid, 0xFF, sizeof(station_qid));	// reset station qid to 0xFF
 	nqueue = 0;
 	last_seq_stop_time = 0;
 }

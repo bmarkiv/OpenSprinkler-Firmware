@@ -4863,10 +4863,13 @@ var showHome = ( function() {
 						// Third byte is either 0 or 1 for active low (GND) or high (+5V) relays (default 1 for HIGH)
 						// Restrict selection to GPIO pins available on the RPi R2.
 						var gpioPin = 5, activeState = 1, freePins, sel;
+						var hwv = getHWVersion();
 
-						if ( getHWVersion() === "OSPi" ) {
+						if ( hwv === "OSPi") {
 							freePins = [ 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 19, 20, 21, 23, 24, 25, 26 ];
-						} else if ( getHWVersion() === "2.3" ) {
+						} else if ( hwv === "3.2" || hwv === "Demo") {
+							freePins = [0,12,13,14,15];
+						} else if ( hwv === "2.3" ) {
 							freePins = [ 2, 10, 12, 13, 14, 15, 18, 19 ];
 						}
 

@@ -1375,6 +1375,7 @@ void server_change_options(){
 			}
 			if (v>=0 && v<=max_value) {
 				os.iopts[oid] = v;
+				DEBUG_LOGF("server_change_options: oid=%d, v=%d\n", oid, v);
 			} else {
 				err = 1;
 			}		 

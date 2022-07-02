@@ -64,7 +64,7 @@ extern char ether_buffer[];
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
 	byte OpenSprinkler::state = OS_STATE_INITIAL;
 	byte OpenSprinkler::prev_station_bits[MAX_NUM_STATIONS/8];
-	IOEXP* OpenSprinkler::expanders[MAX_NUM_BOARDS/2];
+	IOEXP* OpenSprinkler::expanders[MAX_EXT_BOARDS/2];
 	IOEXP* OpenSprinkler::mainio; // main controller IO expander object
 	IOEXP* OpenSprinkler::drio; // driver board IO expander object
 	RCSwitch OpenSprinkler::rfswitch;
@@ -1493,7 +1493,7 @@ byte OpenSprinkler::set_station_bit(byte sid, byte value) {
 /** Clear all station bits */
 void OpenSprinkler::clear_all_station_bits() {
 	byte sid;
-	for(sid=0;sid<=MAX_NUM_STATIONS;sid++) {
+	for(sid=0;sid<MAX_NUM_STATIONS;sid++) {
 		set_station_bit(sid, 0);
 	}
 }
@@ -2522,8 +2522,8 @@ void OpenSprinkler::config_ip() {
 		IPAddress dnsip(_ip[0], _ip[1], _ip[2], _ip[3]);
 		
 		bool rez = WiFi.config(dvip, gwip, subn, dnsip);
-		DEBUG_PRINTF("WiFi.config=%s: IP=%d.%d.%d.%d\n", rez ? "true" : "false", _ip[0], _ip[1], _ip[2], _ip[3]);
 	}
+	DEBUG_TIMESTAMP(); DEBUG_PRINT("config_ip softAPIP: "); DEBUG_PRINTLN(WiFi.softAPIP());
 }
 
 void OpenSprinkler::save_wifi_ip() {
@@ -2533,6 +2533,7 @@ void OpenSprinkler::save_wifi_ip() {
 		memcpy(iopts+IOPT_DNS_IP1, &(WiFi.dnsIP()[0]), 4);
 		memcpy(iopts+IOPT_SUBNET_MASK1, &(WiFi.subnetMask()[0]), 4);
 		iopts_save();
+		DEBUG_TIMESTAMP(); DEBUG_PRINT("save_wifi_ip localIP: "); DEBUG_PRINTLN(WiFi.localIP());
 	}
 }
 
