@@ -4866,11 +4866,13 @@ var showHome = ( function() {
 						var hwv = getHWVersion();
 
 						if ( hwv === "OSPi") {
-							freePins = [ 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 19, 20, 21, 23, 24, 25, 26 ];
-						} else if ( hwv === "3.2" || hwv === "Demo") {
+							freePins = [2,3,5,6,7,8,9,10,11,12,13,14,16,18,19,20,21,23,24,25,26];
+						} else if ( hwv === "3.2") {
 							freePins = [0,12,13,14,15];
+						} else if ( hwv === "3.2" || hwv === "Demo") {
+							freePins = [2,3,5,6,7,8,9,10,11,12,13,14,16,18,19,20,21,23,24,25,26];
 						} else if ( hwv === "2.3" ) {
-							freePins = [ 2, 10, 12, 13, 14, 15, 18, 19 ];
+							freePins = [2,10,12,13,14,15,18,19];
 						}
 
 						if ( type === value ) {
@@ -9085,6 +9087,38 @@ function getImportMethod( localData ) {
 
 	openPopup( popup, { positionTo: $( "#sprinklers-settings" ).find( ".import_config" ) } );
 }
+function importOptions( data ) {
+	var co = "/co?pw=", isPi = isOSPi();
+	var findKey = function( index ) { return keyIndex[ index ] === key; };
+
+	for ( i in data.options ) {
+		if ( data.options.hasOwnProperty( i ) && keyIndex.hasOwnProperty( i ) ) {
+			key = keyIndex[ i ];
+			if ( $.inArray( key, [ 2, 14, 16, 21, 22, 25, 36 ] ) !== -1 && data.options[ i ] === 0 ) {
+				continue;
+			}
+			if ( key === 3 ) {
+				if ( checkOSVersion( 210 ) && controller.options.dhcp === 1 ) {
+					co += "&o3=1";
+				}
+				continue;
+			}
+			if ( isPi ) {
+				key = Object.keys( keyIndex ).find( findKey );
+				if ( key === undefined ) {
+					continue;
+				}
+			}
+			if ( checkOSVersion( 208 ) === true && typeof data.options[ i ] === "string" ) {
+				option = data.options[ i ].replace( /\s/g, "_" );
+			} else {
+				option = data.options[ i ];
+			}
+			co += "&o" + key + "=" + option;
+		}
+	}
+	return co;
+}
 
 function importConfig( data ) {
 	var warning = "";
@@ -9105,39 +9139,10 @@ function importConfig( data ) {
 		$.mobile.loading( "show" );
 
 		var cs = "/cs?pw=",
-			co = "/co?pw=",
+			co = importOptions(data),
 			cpStart = "/cp?pw=",
 			isPi = isOSPi(),
 			i, key, option, station;
-
-		var findKey = function( index ) { return keyIndex[ index ] === key; };
-
-		for ( i in data.options ) {
-			if ( data.options.hasOwnProperty( i ) && keyIndex.hasOwnProperty( i ) ) {
-				key = keyIndex[ i ];
-				if ( $.inArray( key, [ 2, 14, 16, 21, 22, 25, 36 ] ) !== -1 && data.options[ i ] === 0 ) {
-					continue;
-				}
-				if ( key === 3 ) {
-					if ( checkOSVersion( 210 ) && controller.options.dhcp === 1 ) {
-						co += "&o3=1";
-					}
-					continue;
-				}
-				if ( isPi ) {
-					key = Object.keys( keyIndex ).find( findKey );
-					if ( key === undefined ) {
-						continue;
-					}
-				}
-				if ( checkOSVersion( 208 ) === true && typeof data.options[ i ] === "string" ) {
-					option = data.options[ i ].replace( /\s/g, "_" );
-				} else {
-					option = data.options[ i ];
-				}
-				co += "&o" + key + "=" + option;
-			}
-		}
 
 		// Handle import from versions prior to 2.1.1 for enable logging flag
 		if ( !isPi && typeof data.options.fwv === "number" && data.options.fwv < 211 && checkOSVersion( 211 ) ) {
