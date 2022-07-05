@@ -747,8 +747,10 @@ void do_loop()
 							if (prog.use_weather) {
 								byte wl = os.iopts[IOPT_WATER_PERCENTAGE];
 								water_time = water_time * wl / 100;
-								if (wl < 20 && water_time < 10) // if water_percentage is less than 20% and water_time is less than 10 seconds
-																								// do not water
+								
+								// if water_percentage is less than 20% and water_time is less than 10 seconds
+								// do not water
+								if (wl < 20 && water_time < 10) 
 									water_time = 0;
 							}
 

@@ -708,19 +708,19 @@ void server_change_runonce() {
 	// reset all stations and prepare to run one-time program
 	reset_all_stations_immediate();
 
-	byte sid;
-	uint16_t dur;
 	boolean match_found = false;
-	for(sid=0;sid<os.nstations;sid++) {
-		dur=parse_listdata(&pv);
+	for(byte sid=0;sid<os.nstations;sid++) {
+		uint16_t water_time=parse_listdata(&pv);
+		byte wl = os.iopts[IOPT_WATER_PERCENTAGE];
+		water_time = water_time * wl / 100;		
 
 		// if non-zero duration is given
 		// and if the station has not been disabled
-		if (dur>0 && !os.check_bit(os.stationAttributes.a.attrib_dis, sid)) {
+		if (water_time>0 && !os.check_bit(os.stationAttributes.a.attrib_dis, sid)) {
 			RuntimeQueueStruct *q = pd.enqueue();
 			if (q) {
 				q->st = 0;
-				q->dur = water_time_resolve(dur);
+				q->dur = water_time_resolve(water_time);
 				q->pid = 254;
 				q->sid = sid;
 				match_found = true;
@@ -1577,12 +1577,11 @@ void server_change_manual() {
 		handle_return(HTML_DATA_MISSING);
 	}
 
-	uint16_t timer=0;
 	unsigned long curr_time = os.now_tz();
-	if (en) { // if turning on a station, must provide timer
+	if (en) { // if turning on a station, must provide water time
 		if (findKeyVal(p, tmp_buffer, TMP_BUFFER_SIZE, PSTR("t"), true)) {
-			timer=(uint16_t)atol(tmp_buffer);
-			if (timer==0 || timer>64800) {
+			uint16_t water_time=(uint16_t)atol(tmp_buffer);
+			if (water_time==0 || water_time>64800) {
 				handle_return(HTML_DATA_OUTOFBOUND);
 			}
 			// schedule manual station
@@ -1602,7 +1601,7 @@ void server_change_manual() {
 			// if the queue is not full
 			if (q) {
 				q->st = 0;
-				q->dur = timer;
+				q->dur = water_time;
 				q->sid = sid;
 				q->pid = 99;	// testing stations are assigned program index 99
 				schedule_all_stations(curr_time);
