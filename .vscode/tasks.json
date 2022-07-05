@@ -24,7 +24,7 @@
                 "-lmosquitto"
             ],
             "options": {
-                "cwd": "~/OpenSprinkler-Firmware"
+                "cwd": "${workspaceRoot}/"
             },
             "problemMatcher": [
                 "$gcc"

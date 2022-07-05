@@ -24,7 +24,7 @@
 
 #ifndef _WEATHER_H
 #define _WEATHER_H
-
+#if defined(CHECK_WEATHER)
 #define WEATHER_UPDATE_SUNRISE	0x01
 #define WEATHER_UPDATE_SUNSET		0x02
 #define WEATHER_UPDATE_EIP			0x04
@@ -36,4 +36,5 @@ void GetWeather();
 
 extern char wt_rawData[];
 extern int wt_errCode;
+#endif
 #endif	// _WEATHER_H

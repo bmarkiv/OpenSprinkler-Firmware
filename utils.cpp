@@ -220,15 +220,14 @@ void write_to_file(const char *fn, const char *data, ulong size, ulong pos, bool
 
 void read_from_file(const char *fn, char *data, ulong maxsize, ulong pos) {
 #if defined(ESP8266)
-
 	File f = SPIFFS.open(fn, "r");
 	if(!f) {
 		data[0]=0;
 		return;  // return with empty string
 	}
 	if(pos)  f.seek(pos, SeekSet);
-	int len = f.read((byte*)data, maxsize);
-	if(len>0) data[len]=0;
+	int len = f.read((byte*)data, maxsize-1);
+	if(len > 0 && len < maxsize) data[len]=0;
 	if(len==1 && data[0]==' ') data[0] = 0;  // hack to circumvent SPIFFS bug involving writing empty file
 	data[maxsize-1]=0;
 	f.close();
@@ -297,7 +296,6 @@ void remove_file(const char *fn) {
 
 bool file_exists(const char *fn) {
 #if defined(ESP8266)
-
 	return SPIFFS.exists(fn);
 
 #elif defined(ARDUINO)
@@ -316,16 +314,20 @@ bool file_exists(const char *fn) {
 }
 long file_length(const char *fn) {
 #if defined(ESP8266)
-
-	return SPIFFS.exists(fn);
-
+	if (SPIFFS.exists(fn)){
+		File file = SPIFFS.open(fn, "r");
+		if (!file)
+			return -1;
+		long length = file.size();
+		file.close();
+		return length;
+	}
+	return -1;
+	//return SPIFFS.exists(fn);
 #elif defined(ARDUINO)
-
 	sd.chdir("/");
 	return sd.exists(fn);
-
 #else
-
 	FILE *file;
 	file = fopen(get_filename_fullpath(fn), "rb");
 	if(file) {
@@ -336,13 +338,12 @@ long file_length(const char *fn) {
 	}else {
 		return -1;
 	}
-
 #endif
 }
 
 
 // file functions
-void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
+bool file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 #if defined(ESP8266)
 
 	// do not use File.readBytes or readBytesUntil because it's very slow  
@@ -351,6 +352,7 @@ void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 		f.seek(pos, SeekSet);
 		f.read((byte*)dst, len);
 		f.close();
+		return true;
 	}
 
 #elif defined(ARDUINO)
@@ -361,6 +363,7 @@ void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 		file.seekSet(pos);
 		file.read(dst, len);
 		file.close();
+		return true;
 	}
 
 #else
@@ -370,9 +373,11 @@ void file_read_block(const char *fn, void *dst, ulong pos, ulong len) {
 		fseek(fp, pos, SEEK_SET);
 		fread(dst, 1, len, fp);
 		fclose(fp);
+		return true;
 	}  
 
 #endif
+	return false;
 }
 
 void file_write_block(const char *fn, const void *src, ulong pos, ulong len) {

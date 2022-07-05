@@ -20,6 +20,25 @@ elif [ "$1" == "osbo" ]; then
 	apt-get install -y libmosquitto-dev
 	echo "Compiling firmware..."
 	g++ -o OpenSprinkler -DOSBO main.cpp OpenSprinkler.cpp program.cpp opensprinkler_server.cpp utils.cpp weather.cpp gpio.cpp etherport.cpp mqtt.cpp -lpthread -lmosquitto
+elif [ "$1" == "app" ]; then
+	echo "Building app.js..."
+	cat js/jquery.js  > data/js/app.js
+	cat js/libs.js   >> data/js/app.js
+	cat js/hasher.js >> data/js/app.js
+	cat js/main.js   >> data/js/app.js
+
+
+	exit 0	
+elif [ "$1" == "64" ]; then
+	echo "Building app.js..."
+	rm  data/js/app.js.gz
+	cat js/jquery.js  > data/js/app.js
+	cat js/libs.js   >> data/js/app.js
+	cat js/main.js   >> data/js/app.js
+	gzip                data/js/app.js
+	rm *.dat
+	g++ -g -std=c++11 -o OpenSprinkler -DDEMO -D_GLIBCXX_GCC_GTHR_POSIX_H -D_PTHREAD_H -DLWIP_FEATURES=1 -DLWIP_OPEN_SRC -DLWIP_IPV6=0 -DTCP_MSS=536 -DESP8266_ -DF_CPU=1000000000L -DARDUINO_=150 -DDEBUG -DDEMO main.cpp OpenSprinkler.cpp program.cpp opensprinkler_server.cpp utils.cpp weather.cpp gpio.cpp etherport.cpp mqtt.cpp -lpthread -lmosquitto
+	exit 0
 else
 	echo "Installing required libraries..."
 	apt-get install -y libmosquitto-dev
