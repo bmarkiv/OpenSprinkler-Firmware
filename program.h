@@ -124,15 +124,15 @@ public:
 class ProgramData {
 public:  
 	static RuntimeQueueStruct queue[];
-	static byte nqueue;					// number of queue elements
-	static byte station_qid[];	// this array stores the queue element index for each scheduled station
-	static byte nprograms;			// number of programs
+	static byte nqueue;						// number of queue elements
+	static byte station_qid[];				// this array stores the queue element index for each scheduled station
+	static byte nprograms;					// number of programs
 	static LogStruct lastrun;
-	static ulong last_seq_stop_time;	// the last stop time of a sequential station
+	static ulong last_seq_stop_time;		// the last stop time of a sequential station
 	
 	static void reset_runtime();
-	static RuntimeQueueStruct* enqueue(); // this returns a pointer to the next available slot in the queue
-	static void dequeue(byte qid);	// this removes an element from the queue
+	static RuntimeQueueStruct* enqueue(); 	// this returns a pointer to the next available slot in the queue
+	static void dequeue(byte qid);			// this removes an element from the queue
 
 	static void init();
 	static void eraseall();

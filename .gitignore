@@ -3,6 +3,7 @@ OpenSprinkler
 wtopts.txt
 *.dat
 *.sh
+*.log
 testmode.h
 build-1284/*
 .pio
