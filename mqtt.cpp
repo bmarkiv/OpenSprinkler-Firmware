@@ -43,7 +43,7 @@
 #include "mqtt.h"
 
 // Debug routines to help identify any blocking of the event loop for an extended period
-
+#if 0
 #if defined(ENABLE_DEBUG)
 	#if defined(ARDUINO)
 		#include "TimeLib.h"
@@ -62,6 +62,7 @@
 	#define DEBUG_PRINTF(msg, ...)			{}
 	#define DEBUG_LOGF(msg, ...)			{}
 	#define DEBUG_DURATION()				{}
+#endif
 #endif
 
 #define str(s) #s

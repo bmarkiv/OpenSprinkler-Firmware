@@ -129,7 +129,7 @@ struct StationAttributes_ {
             at.gid = 0;
             if( get_attrib_bit(attrib_spe, i, b) == 0) {
                 // if station special bit is 0, make sure to write type STANDARD
-                d[i].type = STN_TYPE_STANDARD;
+                d[sid].type = STN_TYPE_STANDARD;
             }
         }        
     }

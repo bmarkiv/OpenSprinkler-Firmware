@@ -5180,8 +5180,8 @@ var showHome = ( function() {
 				updateControllerStationSpecial( function() {
 					if(controller.special && !controller.special.hasOwnProperty( id )){
 						controller.special[id] = {
-							sd: "server,80,on,off",
-							st: 4
+							st: 4,
+							sd: "server,80,on,off"
 						};
 					}
 					const st = controller.special ? controller.special[ id ].st : 0;

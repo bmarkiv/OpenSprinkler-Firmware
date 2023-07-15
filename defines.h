@@ -424,7 +424,7 @@ enum {
 		#define DEBUG_BEGIN(x)          		{}  /** Serial debug functions */
 		inline  void DEBUG_PRINT(int x) 		{printf("%d", x);}
 		inline  void DEBUG_PRINT(const char*s) 	{printf("%s", s);}
-		#define DEBUG_PRINTF(f, ...)            do {printf(f, __VA_ARGS__); } while (0)
+		#define DEBUG_PRINTF(...)            do {printf(__VA_ARGS__); } while (0)
 		#define DEBUG_PRINTLN(x)        		{DEBUG_PRINT(x);printf("\n");}
 		#define DEBUG_TIMESTAMP()			    {char tstr[21]; time_t t = time(NULL); struct tm *tm = localtime(&t); strftime(tstr, 21, "%y-%m-%d %H:%M:%S - ", tm);printf("%s", tstr);}
 	#endif
