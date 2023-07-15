@@ -43,7 +43,7 @@
 #include "mqtt.h"
 
 // Debug routines to help identify any blocking of the event loop for an extended period
-#if 0
+#if 1
 #if defined(ENABLE_DEBUG)
 	#if defined(ARDUINO)
 		#include "TimeLib.h"
@@ -59,8 +59,8 @@
 	static unsigned long _lastMillis = 0;	// Holds the timestamp associated with the last call to DEBUG_DURATION() 
 	inline unsigned long DEBUG_DURATION()	{unsigned long dur = millis() - _lastMillis; _lastMillis = millis(); return dur;}
 #else
-	#define DEBUG_PRINTF(msg, ...)			{}
-	#define DEBUG_LOGF(msg, ...)			{}
+	#define DEBUG_PRINTF(...)			    {}
+	#define DEBUG_LOGF(...)			        {}
 	#define DEBUG_DURATION()				{}
 #endif
 #endif

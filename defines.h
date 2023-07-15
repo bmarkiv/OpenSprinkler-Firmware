@@ -27,7 +27,7 @@
 //#undef ESP8266
 //#undef ARDUINO
 
-#define ENABLE_DEBUG  // enable serial debug
+//#define ENABLE_DEBUG  // enable serial debug
 #undef byte
 typedef unsigned char byte;
 typedef unsigned long ulong;
@@ -428,14 +428,14 @@ enum {
 		#define DEBUG_PRINTLN(x)        		{DEBUG_PRINT(x);printf("\n");}
 		#define DEBUG_TIMESTAMP()			    {char tstr[21]; time_t t = time(NULL); struct tm *tm = localtime(&t); strftime(tstr, 21, "%y-%m-%d %H:%M:%S - ", tm);printf("%s", tstr);}
 	#endif
-	#define DEBUG_LOGF(msg, ...)			    {DEBUG_TIMESTAMP(); DEBUG_PRINTF(msg, __VA_ARGS__);}
+	#define DEBUG_LOGF(...)			    {DEBUG_TIMESTAMP(); DEBUG_PRINTF(__VA_ARGS__);}
   
 #else
 
 	#define DEBUG_BEGIN(x)   {}
 	#define DEBUG_PRINT(x)   {}
 	#define DEBUG_PRINTLN(x) {}
-	#define DEBUG_LOGF(x)    {}
+	#define DEBUG_LOGF(...)    {}
 	#define DEBUG_TIMESTAMP() {}
 #endif
   
