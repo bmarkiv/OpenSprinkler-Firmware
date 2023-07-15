@@ -27,7 +27,7 @@
 #include "testmode.h"
 
 /** Declare static data members */
-OSMqtt OpenSprinkler::mqtt;
+//OSMqtt OpenSprinkler::mqtt;
 NVConData OpenSprinkler::nvdata;
 ConStatus OpenSprinkler::status;
 ConStatus OpenSprinkler::old_status;
