@@ -22,12 +22,11 @@ elif [ "$1" == "osbo" ]; then
 	g++ -o OpenSprinkler -DOSBO main.cpp OpenSprinkler.cpp program.cpp opensprinkler_server.cpp utils.cpp weather.cpp gpio.cpp etherport.cpp mqtt.cpp -lpthread -lmosquitto
 elif [ "$1" == "app" ]; then
 	echo "Building app.js..."
+	rm  data/js/app.js.gz
 	cat js/jquery.js  > data/js/app.js
 	cat js/libs.js   >> data/js/app.js
-	cat js/hasher.js >> data/js/app.js
 	cat js/main.js   >> data/js/app.js
-
-
+	gzip                data/js/app.js
 	exit 0	
 elif [ "$1" == "64" ]; then
 	echo "Building app.js..."

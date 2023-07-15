@@ -5178,7 +5178,13 @@ var showHome = ( function() {
 			// Refresh station data from firmware and update the Advanced tab to reflect special station type
 			if ( isStationSpecial( id ) ) {
 				updateControllerStationSpecial( function() {
-					const st = controller.special && controller.special.hasOwnProperty( id ) ? controller.special[ id ].sd : "";
+					if(controller.special && !controller.special.hasOwnProperty( id )){
+						controller.special[id] = {
+							sd: "server,80,on,off",
+							st: 4
+						};
+					}
+					const st = controller.special ? controller.special[ id ].st : 0;
 					select.find( "#hs" )
 						.removeClass( "ui-disabled" )
 						.find( "option[data-hs='" + st + "']" ).prop( "selected", true );
